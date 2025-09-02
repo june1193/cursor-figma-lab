@@ -1,11 +1,31 @@
+# 대시보드 프로젝트
 
-  # Webpage with Recharts and MUI
+React와 Recharts를 활용한 현대적인 데이터 대시보드 애플리케이션입니다.
 
-  This is a code bundle for Webpage with Recharts and MUI. The original project is available at https://www.figma.com/design/iEgaef5p8g5CWDscOAFIKs/Webpage-with-Recharts-and-MUI.
+## 🚀 기술 스택
 
-  ## Running the code
+- **React** `18.3.1` - UI 라이브러리
+- **TypeScript** - 타입 안정성  
+- **Vite** `6.3.5` - 빌드 도구
+- **Tailwind CSS** - 유틸리티 우선 CSS 프레임워크
+- **Radix UI** - 접근성 중심 헤드리스 UI 컴포넌트
+- **Recharts** `2.15.2` - React 차트 라이브러리
 
-  Run `npm i` to install the dependencies.
+## 📊 주요 기능
 
-  Run `npm run dev` to start the development server.
-  
+- **인터랙티브 차트**: 다중 데이터 시리즈 바 차트
+- **데이터 테이블**: 정렬 가능한 반응형 테이블
+- **반응형 디자인**: 모바일 우선 접근 방식
+
+## 📈 차트 구성
+
+1. **일별 판매 차트** - Type1, Type2, Type3 비교
+2. **MTD 차트** - 월간 비교 (2달전, 1달전, 당월)
+3. **YTD 차트** - 연간 비교 (2년전, 1년전, 올해)
+
+## 📋 데이터 테이블
+
+1. **제품별 판매현황** - 상담건수, 판매건수, 수수료
+2. **판매자별 판매현황** - 판매자별 성과 지표
+3. **이용기관별 판매현황** - 기관별 이용 현황
+4. **수수료 현황** - 수수료 관련 데이터
