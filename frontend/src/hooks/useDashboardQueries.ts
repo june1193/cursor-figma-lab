@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService, ProductManagement, SalesPerson, Institution, CommissionStatus } from '../services/api';
+import { IApiError } from '../types/error';
+import { getErrorMessage, logError } from '../utils/errorHandler';
 
 // Query Keys
 export const queryKeys = {
@@ -19,6 +21,9 @@ export const useProductManagement = () => {
     queryKey: queryKeys.productManagement,
     queryFn: apiService.getProductManagement,
     staleTime: 5 * 60 * 1000, // 5분
+    onError: (error: IApiError) => {
+      logError(error, 'useProductManagement');
+    },
   });
 };
 

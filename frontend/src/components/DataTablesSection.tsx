@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { useDashboardData } from "../hooks/useDashboardQueries";
+import { ErrorDisplay } from "./ErrorDisplay";
+import { IApiError } from "../types/error";
 
 export function DataTablesSection() {
   const { 
@@ -25,13 +27,14 @@ export function DataTablesSection() {
   }
 
   // 에러 상태 처리
-  if (isError) {
+  if (isError && error) {
     return (
       <div className="col-span-12 lg:col-span-8 space-y-8">
-        <div className="text-center py-8">
-          <div className="text-lg text-red-600">데이터를 불러오는데 실패했습니다.</div>
-          <div className="text-sm text-slate-500 mt-2">{error?.message}</div>
-        </div>
+        <ErrorDisplay 
+          error={error as IApiError}
+          title="데이터를 불러오는데 실패했습니다"
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }
