@@ -1,81 +1,227 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 
-const productData = [
-  { id: 1, 제품명: 'CMA Type1', 상담건수: '45', 판매건수: '38', 수수료: '500,000', MTD상담건수: '1,350', MTD판매건수: '1,140', 수수료MTD: '25,000,000', YTD상담건수: '16,200', YTD판매건수: '13,680', 수수료YTD: '300,000,000' },
-  { id: 2, 제품명: 'CMA Type2', 상담건수: '28', 판매건수: '22', 수수료: '300,000', MTD상담건수: '840', MTD판매건수: '660', 수수료MTD: '15,000,000', YTD상담건수: '10,080', YTD판매건수: '7,920', 수수료YTD: '180,000,000' },
-  { id: 3, 제품명: '총합계', 상담건수: '73', 판매건수: '60', 수수료: '800,000', MTD상담건수: '2,190', MTD판매건수: '1,800', 수수료MTD: '40,000,000', YTD상담건수: '26,280', YTD판매건수: '21,600', 수수료YTD: '480,000,000' }
-];
+// API에서 가져올 데이터 타입 정의
+interface ProductManagement {
+  id: number;
+  productName: string;
+  consultationCount: number;
+  salesCount: number;
+  commission: number;
+  mtdConsultationCount: number;
+  mtdSalesCount: number;
+  mtdCommission: number;
+  ytdConsultationCount: number;
+  ytdSalesCount: number;
+  ytdCommission: number;
+}
 
-const salesPersonData = [
-  { id: 1, 판매자명: '김영희', 상담건수: '35', 판매건수: '28', 수수료: '400,000', MTD상담건수: '1,050', MTD판매건수: '840', 수수료MTD: '20,000,000', YTD상담건수: '12,600', YTD판매건수: '10,080', 수수료YTD: '240,000,000' },
-  { id: 2, 판매자명: '박민수', 상담건수: '25', 판매건수: '18', 수수료: '300,000', MTD상담건수: '750', MTD판매건수: '540', 수수료MTD: '15,000,000', YTD상담건수: '9,000', YTD판매건수: '6,480', 수수료YTD: '180,000,000' },
-  { id: 3, 판매자명: '총합계', 상담건수: '60', 판매건수: '46', 수수료: '700,000', MTD상담건수: '1,800', MTD판매건수: '1,380', 수수료MTD: '35,000,000', YTD상담건수: '21,600', YTD판매건수: '16,560', 수수료YTD: '420,000,000' }
-];
+// 추가 데이터 타입 정의
+interface SalesPerson {
+  id: number;
+  salesPersonName: string;
+  consultationCount: number;
+  salesCount: number;
+  commission: number;
+  mtdConsultationCount: number;
+  mtdSalesCount: number;
+  mtdCommission: number;
+  ytdConsultationCount: number;
+  ytdSalesCount: number;
+  ytdCommission: number;
+}
 
-const institutionData = [
-  { id: 1, 이용기관: 'A증권', 상담건수: '42', 판매건수: '35', 수수료: '500,000', MTD상담건수: '1,260', MTD판매건수: '1,050', 수수료MTD: '25,000,000', YTD상담건수: '15,120', YTD판매건수: '12,600', 수수료YTD: '300,000,000' },
-  { id: 2, 이용기관: 'B증권', 상담건수: '22', 판매건수: '16', 수수료: '250,000', MTD상담건수: '660', MTD판매건수: '480', 수수료MTD: '12,500,000', YTD상담건수: '7,920', YTD판매건수: '5,760', 수수료YTD: '150,000,000' },
-  { id: 3, 이용기관: '총합계', 상담건수: '64', 판매건수: '51', 수수료: '750,000', MTD상담건수: '1,920', MTD판매건수: '1,530', 수수료MTD: '37,500,000', YTD상담건수: '23,040', YTD판매건수: '18,360', 수수료YTD: '450,000,000' }
-];
+interface Institution {
+  id: number;
+  institutionName: string;
+  consultationCount: number;
+  salesCount: number;
+  commission: number;
+  mtdConsultationCount: number;
+  mtdSalesCount: number;
+  mtdCommission: number;
+  ytdConsultationCount: number;
+  ytdSalesCount: number;
+  ytdCommission: number;
+}
 
-const performanceData = [
-  { id: 1, 구분: '수수료수익', 당일: '1,200,000', 전일: '1,150,000', 전주: '1,250,000', MTD당일: '60,000,000', 전일MTD: '58,850,000', 전주MTD: '61,250,000', YTD당일: '720,000,000', 전일YTD: '718,850,000', 전주YTD: '731,250,000' },
-  { id: 2, 구분: '총수익', 당일: '1,200,000', 전일: '1,150,000', 전주: '1,250,000', MTD당일: '60,000,000', 전일MTD: '58,850,000', 전주MTD: '61,250,000', YTD당일: '720,000,000', 전일YTD: '718,850,000', 전주YTD: '731,250,000' }
-];
+interface CommissionStatus {
+  id: number;
+  productType: string;
+  commission: number;
+  mtdCommission: number;
+  ytdCommission: number;
+}
 
 export function DataTablesSection() {
+  const [productManagementData, setProductManagementData] = useState<ProductManagement[]>([]);
+  const [salesPersonData, setSalesPersonData] = useState<SalesPerson[]>([]);
+  const [institutionData, setInstitutionData] = useState<Institution[]>([]);
+  const [commissionData, setCommissionData] = useState<CommissionStatus[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // API에서 데이터 가져오기
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 모든 API를 병렬로 호출
+        const [productResponse, salesResponse, institutionResponse, commissionResponse] = await Promise.all([
+          fetch('http://localhost:8080/api/product-management'),
+          fetch('http://localhost:8080/api/sales-persons'),
+          fetch('http://localhost:8080/api/institutions'),
+          fetch('http://localhost:8080/api/commission-status')
+        ]);
+
+        const [productData, salesData, institutionData, commissionData] = await Promise.all([
+          productResponse.json(),
+          salesResponse.json(),
+          institutionResponse.json(),
+          commissionResponse.json()
+        ]);
+
+        setProductManagementData(productData);
+        setSalesPersonData(salesData);
+        setInstitutionData(institutionData);
+        setCommissionData(commissionData);
+      } catch (error) {
+        console.error('데이터를 가져오는데 실패했습니다:', error);
+        // 에러 발생 시 빈 배열로 설정
+        setProductManagementData([]);
+        setSalesPersonData([]);
+        setInstitutionData([]);
+        setCommissionData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // API 데이터를 테이블 형식으로 변환
+  const productData = productManagementData.map(item => ({
+    id: item.id,
+    제품명: item.productName,
+    상담건수: item.consultationCount.toString(),
+    판매건수: item.salesCount.toString(),
+    수수료: item.commission.toLocaleString(),
+    MTD상담건수: item.mtdConsultationCount.toLocaleString(),
+    MTD판매건수: item.mtdSalesCount.toLocaleString(),
+    수수료MTD: item.mtdCommission.toLocaleString(),
+    YTD상담건수: item.ytdConsultationCount.toLocaleString(),
+    YTD판매건수: item.ytdSalesCount.toLocaleString(),
+    수수료YTD: item.ytdCommission.toLocaleString()
+  }));
+
+  // 총합계 계산
+  const totalData = {
+    id: 999,
+    제품명: '총합계',
+    상담건수: productManagementData.reduce((sum, item) => sum + item.consultationCount, 0).toString(),
+    판매건수: productManagementData.reduce((sum, item) => sum + item.salesCount, 0).toString(),
+    수수료: productManagementData.reduce((sum, item) => sum + item.commission, 0).toLocaleString(),
+    MTD상담건수: productManagementData.reduce((sum, item) => sum + item.mtdConsultationCount, 0).toLocaleString(),
+    MTD판매건수: productManagementData.reduce((sum, item) => sum + item.mtdSalesCount, 0).toLocaleString(),
+    수수료MTD: productManagementData.reduce((sum, item) => sum + item.mtdCommission, 0).toLocaleString(),
+    YTD상담건수: productManagementData.reduce((sum, item) => sum + item.ytdConsultationCount, 0).toLocaleString(),
+    YTD판매건수: productManagementData.reduce((sum, item) => sum + item.ytdSalesCount, 0).toLocaleString(),
+    수수료YTD: productManagementData.reduce((sum, item) => sum + item.ytdCommission, 0).toLocaleString()
+  };
+
+  const finalProductData = [...productData, totalData];
+
+  // 판매자별 데이터 변환
+  const salesPersonTableData = salesPersonData.map(item => ({
+    id: item.id,
+    판매자명: item.salesPersonName,
+    상담건수: item.consultationCount.toString(),
+    판매건수: item.salesCount.toString(),
+    수수료: item.commission.toLocaleString(),
+    MTD상담건수: item.mtdConsultationCount.toLocaleString(),
+    MTD판매건수: item.mtdSalesCount.toLocaleString(),
+    수수료MTD: item.mtdCommission.toLocaleString(),
+    YTD상담건수: item.ytdConsultationCount.toLocaleString(),
+    YTD판매건수: item.ytdSalesCount.toLocaleString(),
+    수수료YTD: item.ytdCommission.toLocaleString()
+  }));
+
+  // 이용기관별 데이터 변환
+  const institutionTableData = institutionData.map(item => ({
+    id: item.id,
+    이용기관: item.institutionName,
+    상담건수: item.consultationCount.toString(),
+    판매건수: item.salesCount.toString(),
+    수수료: item.commission.toLocaleString(),
+    MTD상담건수: item.mtdConsultationCount.toLocaleString(),
+    MTD판매건수: item.mtdSalesCount.toLocaleString(),
+    수수료MTD: item.mtdCommission.toLocaleString(),
+    YTD상담건수: item.ytdConsultationCount.toLocaleString(),
+    YTD판매건수: item.ytdSalesCount.toLocaleString(),
+    수수료YTD: item.ytdCommission.toLocaleString()
+  }));
+
+  // 수수료 현황 데이터 변환
+  const commissionTableData = commissionData.map(item => ({
+    id: item.id,
+    구분: item.productType,
+    수수료: item.commission.toLocaleString(),
+    MTD수수료: item.mtdCommission.toLocaleString(),
+    YTD수수료: item.ytdCommission.toLocaleString()
+  }));
+
+  if (loading) {
+    return (
+      <div className="col-span-12 lg:col-span-8 space-y-8">
+        <div className="text-center py-8">
+          <div className="text-lg text-slate-600">데이터를 불러오는 중...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* 제품별 관리현황 */}
+    <div className="col-span-12 lg:col-span-8 space-y-8">
+      {/* 제품별 판매현황 */}
       <Card className="bg-white/90 backdrop-blur-sm border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300">
-        <CardHeader className="pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-            <div>
-              <CardTitle className="text-xl font-bold text-slate-800">제품별 관리현황</CardTitle>
-              <p className="text-sm text-slate-500 mt-1">Product Management Status</p>
-            </div>
-          </div>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl font-bold text-slate-800">제품별 판매현황</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead rowSpan={2} className="border-slate-200 bg-slate-100/50 font-semibold text-slate-700 text-center py-4">제품명</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-blue-50 text-center font-semibold text-blue-700 py-3">Today</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-emerald-50 text-center font-semibold text-emerald-700 py-3">MTD</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-violet-50 text-center font-semibold text-violet-700 py-3">YTD</TableHead>
-                </TableRow>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">상담건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">판매건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">수수료</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">상담건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">판매건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">수수료</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">상담건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">판매건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">수수료</TableHead>
+                <TableRow className="border-slate-200">
+                  <TableHead className="text-slate-700 font-semibold">제품명</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">상담건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">판매건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">MTD상담건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">MTD판매건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료MTD</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">YTD상담건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">YTD판매건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료YTD</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {productData.map((row, index) => (
+                {finalProductData.map((row) => (
                   <TableRow 
                     key={row.id} 
-                    className={`${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} hover:bg-blue-50/30 transition-colors duration-200 ${row.제품명 === '총합계' ? 'border-t-2 border-slate-300 bg-slate-100/50 font-semibold' : ''}`}
+                    className={`border-slate-100 hover:bg-slate-50/50 transition-colors ${
+                      row.제품명 === '총합계' ? 'bg-slate-50 font-semibold' : ''
+                    }`}
                   >
-                    <TableCell className="border-slate-200 text-slate-700 font-medium text-center py-3">{row.제품명}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.상담건수}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.판매건수}</TableCell>
-                    <TableCell className="border-slate-200 text-blue-600 text-sm text-right py-3 font-medium">{row.수수료}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.MTD상담건수}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.MTD판매건수}</TableCell>
-                    <TableCell className="border-slate-200 text-emerald-600 text-sm text-right py-3 font-medium">{row.수수료MTD}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.YTD상담건수}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.YTD판매건수}</TableCell>
-                    <TableCell className="border-slate-200 text-violet-600 text-sm text-right py-3 font-medium">{row.수수료YTD}</TableCell>
+                    <TableCell className="text-slate-800">{row.제품명}</TableCell>
+                    <TableCell className="text-slate-700">{row.상담건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.판매건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료}</TableCell>
+                    <TableCell className="text-slate-700">{row.MTD상담건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.MTD판매건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료MTD}</TableCell>
+                    <TableCell className="text-slate-700">{row.YTD상담건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.YTD판매건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료YTD}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -86,53 +232,44 @@ export function DataTablesSection() {
 
       {/* 판매자별 판매현황 */}
       <Card className="bg-white/90 backdrop-blur-sm border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300">
-        <CardHeader className="pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-gradient-to-b from-emerald-500 to-emerald-600 rounded-full"></div>
-            <div>
-              <CardTitle className="text-xl font-bold text-slate-800">판매자별 판매현황</CardTitle>
-              <p className="text-sm text-slate-500 mt-1">Sales Performance by Salesperson</p>
-            </div>
-          </div>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl font-bold text-slate-800">판매자별 판매현황</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead rowSpan={2} className="border-slate-200 bg-slate-100/50 font-semibold text-slate-700 text-center py-4">판매자명</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-blue-50 text-center font-semibold text-blue-700 py-3">Today</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-emerald-50 text-center font-semibold text-emerald-700 py-3">MTD</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-violet-50 text-center font-semibold text-violet-700 py-3">YTD</TableHead>
-                </TableRow>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">상담건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">판매건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">수수료</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">상담건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">판매건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">수수료</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">상담건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">판매건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">수수료</TableHead>
+                <TableRow className="border-slate-200">
+                  <TableHead className="text-slate-700 font-semibold">판매자명</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">상담건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">판매건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">MTD상담건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">MTD판매건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료MTD</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">YTD상담건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">YTD판매건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료YTD</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {salesPersonData.map((row, index) => (
+                {salesPersonTableData.map((row) => (
                   <TableRow 
                     key={row.id} 
-                    className={`${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} hover:bg-emerald-50/30 transition-colors duration-200 ${row.판매자명 === '총합계' ? 'border-t-2 border-slate-300 bg-slate-100/50 font-semibold' : ''}`}
+                    className={`border-slate-100 hover:bg-slate-50/50 transition-colors ${
+                      row.판매자명 === '총합계' ? 'bg-slate-50 font-semibold' : ''
+                    }`}
                   >
-                    <TableCell className="border-slate-200 text-slate-700 font-medium text-center py-3">{row.판매자명}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.상담건수}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.판매건수}</TableCell>
-                    <TableCell className="border-slate-200 text-blue-600 text-sm text-right py-3 font-medium">{row.수수료}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.MTD상담건수}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.MTD판매건수}</TableCell>
-                    <TableCell className="border-slate-200 text-emerald-600 text-sm text-right py-3 font-medium">{row.수수료MTD}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.YTD상담건수}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.YTD판매건수}</TableCell>
-                    <TableCell className="border-slate-200 text-violet-600 text-sm text-right py-3 font-medium">{row.수수료YTD}</TableCell>
+                    <TableCell className="text-slate-800">{row.판매자명}</TableCell>
+                    <TableCell className="text-slate-700">{row.상담건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.판매건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료}</TableCell>
+                    <TableCell className="text-slate-700">{row.MTD상담건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.MTD판매건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료MTD}</TableCell>
+                    <TableCell className="text-slate-700">{row.YTD상담건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.YTD판매건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료YTD}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -143,53 +280,44 @@ export function DataTablesSection() {
 
       {/* 이용기관별 판매현황 */}
       <Card className="bg-white/90 backdrop-blur-sm border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300">
-        <CardHeader className="pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-gradient-to-b from-violet-500 to-violet-600 rounded-full"></div>
-            <div>
-              <CardTitle className="text-xl font-bold text-slate-800">이용기관별 판매현황</CardTitle>
-              <p className="text-sm text-slate-500 mt-1">Sales Performance by Institution</p>
-            </div>
-          </div>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl font-bold text-slate-800">이용기관별 판매현황</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead rowSpan={2} className="border-slate-200 bg-slate-100/50 font-semibold text-slate-700 text-center py-4">이용기관</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-blue-50 text-center font-semibold text-blue-700 py-3">Today</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-emerald-50 text-center font-semibold text-emerald-700 py-3">MTD</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-violet-50 text-center font-semibold text-violet-700 py-3">YTD</TableHead>
-                </TableRow>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">상담건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">판매건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">수수료</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">상담건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">판매건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">수수료</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">상담건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">판매건수</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">수수료</TableHead>
+                <TableRow className="border-slate-200">
+                  <TableHead className="text-slate-700 font-semibold">이용기관</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">상담건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">판매건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">MTD상담건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">MTD판매건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료MTD</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">YTD상담건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">YTD판매건수</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료YTD</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {institutionData.map((row, index) => (
+                {institutionTableData.map((row) => (
                   <TableRow 
                     key={row.id} 
-                    className={`${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} hover:bg-violet-50/30 transition-colors duration-200 ${row.이용기관 === '총합계' ? 'border-t-2 border-slate-300 bg-slate-100/50 font-semibold' : ''}`}
+                    className={`border-slate-100 hover:bg-slate-50/50 transition-colors ${
+                      row.이용기관 === '총합계' ? 'bg-slate-50 font-semibold' : ''
+                    }`}
                   >
-                    <TableCell className="border-slate-200 text-slate-700 font-medium text-center py-3">{row.이용기관}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.상담건수}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.판매건수}</TableCell>
-                    <TableCell className="border-slate-200 text-blue-600 text-sm text-right py-3 font-medium">{row.수수료}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.MTD상담건수}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.MTD판매건수}</TableCell>
-                    <TableCell className="border-slate-200 text-emerald-600 text-sm text-right py-3 font-medium">{row.수수료MTD}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.YTD상담건수}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.YTD판매건수}</TableCell>
-                    <TableCell className="border-slate-200 text-violet-600 text-sm text-right py-3 font-medium">{row.수수료YTD}</TableCell>
+                    <TableCell className="text-slate-800">{row.이용기관}</TableCell>
+                    <TableCell className="text-slate-700">{row.상담건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.판매건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료}</TableCell>
+                    <TableCell className="text-slate-700">{row.MTD상담건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.MTD판매건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료MTD}</TableCell>
+                    <TableCell className="text-slate-700">{row.YTD상담건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.YTD판매건수}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료YTD}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -198,55 +326,34 @@ export function DataTablesSection() {
         </CardContent>
       </Card>
 
-      {/* 수익현황 */}
+      {/* 수수료 현황 */}
       <Card className="bg-white/90 backdrop-blur-sm border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300">
-        <CardHeader className="pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-8 bg-gradient-to-b from-amber-500 to-amber-600 rounded-full"></div>
-            <div>
-              <CardTitle className="text-xl font-bold text-slate-800">수익현황</CardTitle>
-              <p className="text-sm text-slate-500 mt-1">Revenue Performance</p>
-            </div>
-          </div>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl font-bold text-slate-800">수수료 현황</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead rowSpan={2} className="border-slate-200 bg-slate-100/50 font-semibold text-slate-700 text-center py-4">구분</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-blue-50 text-center font-semibold text-blue-700 py-3">Today</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-emerald-50 text-center font-semibold text-emerald-700 py-3">MTD</TableHead>
-                  <TableHead colSpan={3} className="border-slate-200 bg-violet-50 text-center font-semibold text-violet-700 py-3">YTD</TableHead>
-                </TableRow>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">당일</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">전일</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">전주</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">당일</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">전일</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">전주</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">당일</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">전일</TableHead>
-                  <TableHead className="border-slate-200 text-slate-600 text-xs text-center py-2">전주</TableHead>
+                <TableRow className="border-slate-200">
+                  <TableHead className="text-slate-700 font-semibold">구분</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">수수료</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">MTD수수료</TableHead>
+                  <TableHead className="text-slate-700 font-semibold">YTD수수료</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {performanceData.map((row, index) => (
+                {commissionTableData.map((row) => (
                   <TableRow 
                     key={row.id} 
-                    className={`${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} hover:bg-amber-50/30 transition-colors duration-200 ${row.구분 === '총수익' ? 'border-t-2 border-slate-300 bg-slate-100/50 font-semibold' : ''}`}
+                    className={`border-slate-100 hover:bg-slate-50/50 transition-colors ${
+                      row.구분 === '총합계' ? 'bg-slate-50 font-semibold' : ''
+                    }`}
                   >
-                    <TableCell className="border-slate-200 text-slate-700 font-medium text-center py-3">{row.구분}</TableCell>
-                    <TableCell className="border-slate-200 text-blue-600 text-sm text-right py-3 font-medium">{row.당일}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.전일}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.전주}</TableCell>
-                    <TableCell className="border-slate-200 text-emerald-600 text-sm text-right py-3 font-medium">{row.MTD당일}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.전일MTD}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.전주MTD}</TableCell>
-                    <TableCell className="border-slate-200 text-violet-600 text-sm text-right py-3 font-medium">{row.YTD당일}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.전일YTD}</TableCell>
-                    <TableCell className="border-slate-200 text-slate-600 text-sm text-right py-3">{row.전주YTD}</TableCell>
+                    <TableCell className="text-slate-800">{row.구분}</TableCell>
+                    <TableCell className="text-slate-700">{row.수수료}</TableCell>
+                    <TableCell className="text-slate-700">{row.MTD수수료}</TableCell>
+                    <TableCell className="text-slate-700">{row.YTD수수료}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
