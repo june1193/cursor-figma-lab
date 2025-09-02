@@ -1,103 +1,46 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-
-// API에서 가져올 데이터 타입 정의
-interface ProductManagement {
-  id: number;
-  productName: string;
-  consultationCount: number;
-  salesCount: number;
-  commission: number;
-  mtdConsultationCount: number;
-  mtdSalesCount: number;
-  mtdCommission: number;
-  ytdConsultationCount: number;
-  ytdSalesCount: number;
-  ytdCommission: number;
-}
-
-// 추가 데이터 타입 정의
-interface SalesPerson {
-  id: number;
-  salesPersonName: string;
-  consultationCount: number;
-  salesCount: number;
-  commission: number;
-  mtdConsultationCount: number;
-  mtdSalesCount: number;
-  mtdCommission: number;
-  ytdConsultationCount: number;
-  ytdSalesCount: number;
-  ytdCommission: number;
-}
-
-interface Institution {
-  id: number;
-  institutionName: string;
-  consultationCount: number;
-  salesCount: number;
-  commission: number;
-  mtdConsultationCount: number;
-  mtdSalesCount: number;
-  mtdCommission: number;
-  ytdConsultationCount: number;
-  ytdSalesCount: number;
-  ytdCommission: number;
-}
-
-interface CommissionStatus {
-  id: number;
-  productType: string;
-  commission: number;
-  mtdCommission: number;
-  ytdCommission: number;
-}
+import { useDashboardData } from "../hooks/useDashboardQueries";
 
 export function DataTablesSection() {
-  const [productManagementData, setProductManagementData] = useState<ProductManagement[]>([]);
-  const [salesPersonData, setSalesPersonData] = useState<SalesPerson[]>([]);
-  const [institutionData, setInstitutionData] = useState<Institution[]>([]);
-  const [commissionData, setCommissionData] = useState<CommissionStatus[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    productManagement, 
+    salesPersons, 
+    institutions, 
+    commissionStatus,
+    isLoading,
+    isError,
+    error 
+  } = useDashboardData();
 
-  // API에서 데이터 가져오기
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // 모든 API를 병렬로 호출
-        const [productResponse, salesResponse, institutionResponse, commissionResponse] = await Promise.all([
-          fetch('http://localhost:8080/api/product-management'),
-          fetch('http://localhost:8080/api/sales-persons'),
-          fetch('http://localhost:8080/api/institutions'),
-          fetch('http://localhost:8080/api/commission-status')
-        ]);
+  // 로딩 상태 처리
+  if (isLoading) {
+    return (
+      <div className="col-span-12 lg:col-span-8 space-y-8">
+        <div className="text-center py-8">
+          <div className="text-lg text-slate-600">데이터를 불러오는 중...</div>
+        </div>
+      </div>
+    );
+  }
 
-        const [productData, salesData, institutionData, commissionData] = await Promise.all([
-          productResponse.json(),
-          salesResponse.json(),
-          institutionResponse.json(),
-          commissionResponse.json()
-        ]);
+  // 에러 상태 처리
+  if (isError) {
+    return (
+      <div className="col-span-12 lg:col-span-8 space-y-8">
+        <div className="text-center py-8">
+          <div className="text-lg text-red-600">데이터를 불러오는데 실패했습니다.</div>
+          <div className="text-sm text-slate-500 mt-2">{error?.message}</div>
+        </div>
+      </div>
+    );
+  }
 
-        setProductManagementData(productData);
-        setSalesPersonData(salesData);
-        setInstitutionData(institutionData);
-        setCommissionData(commissionData);
-      } catch (error) {
-        console.error('데이터를 가져오는데 실패했습니다:', error);
-        // 에러 발생 시 빈 배열로 설정
-        setProductManagementData([]);
-        setSalesPersonData([]);
-        setInstitutionData([]);
-        setCommissionData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  // 데이터가 없는 경우 처리
+  const productManagementData = productManagement.data || [];
+  const salesPersonData = salesPersons.data || [];
+  const institutionData = institutions.data || [];
+  const commissionData = commissionStatus.data || [];
 
   // API 데이터를 테이블 형식으로 변환
   const productData = productManagementData.map(item => ({
@@ -170,15 +113,7 @@ export function DataTablesSection() {
     YTD수수료: item.ytdCommission.toLocaleString()
   }));
 
-  if (loading) {
-    return (
-      <div className="col-span-12 lg:col-span-8 space-y-8">
-        <div className="text-center py-8">
-          <div className="text-lg text-slate-600">데이터를 불러오는 중...</div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="col-span-12 lg:col-span-8 space-y-8">

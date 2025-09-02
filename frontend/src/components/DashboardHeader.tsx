@@ -1,5 +1,6 @@
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { RefreshButton } from "./RefreshButton";
 
 export function DashboardHeader() {
   return (
@@ -25,9 +26,12 @@ export function DashboardHeader() {
               </Select>
             </div>
           </div>
-          <Button className="bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 font-medium">
-            조회
-          </Button>
+          <div className="flex items-center gap-3">
+            <RefreshButton />
+            <Button className="bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 font-medium">
+              조회
+            </Button>
+          </div>
         </div>
       </div>
     </div>
