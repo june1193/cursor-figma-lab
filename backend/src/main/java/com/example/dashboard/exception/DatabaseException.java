@@ -9,3 +9,4 @@ public class DatabaseException extends BaseException {
         super(message, "DATABASE_ERROR", 500, cause);
     }
 }
+

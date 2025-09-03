@@ -9,3 +9,4 @@ public class DataNotFoundException extends BaseException {
         super(message, "DATA_NOT_FOUND", 404, cause);
     }
 }
+

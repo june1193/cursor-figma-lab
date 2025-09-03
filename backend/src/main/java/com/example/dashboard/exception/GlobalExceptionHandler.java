@@ -81,3 +81,4 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("서버 내부 오류가 발생했습니다.", "INTERNAL_SERVER_ERROR", 500));
     }
 }
+
