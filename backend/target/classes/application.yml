@@ -28,3 +28,8 @@ logging:
   level:
     com.example.dashboard.mapper: DEBUG
     org.springframework.web: DEBUG
+
+# JWT 설정
+jwt:
+  secret: mySecretKey123456789012345678901234567890123456789012345678901234567890
+  expiration: 86400000  # 24시간 (밀리초)

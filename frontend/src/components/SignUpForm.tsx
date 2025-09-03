@@ -4,6 +4,8 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2, Mail, CheckCircle } from "lucide-react";
+import { userApi } from "../services/userApi";
+import type { SignUpRequest } from "../types/user";
 
 interface SignUpFormProps {
   onSignUp: () => void;
@@ -22,6 +24,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [apiError, setApiError] = useState<string>('');
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -59,12 +62,31 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setApiError('');
     
-    // 간단한 데모용 회원가입 로직 - 아무거나 입력해도 회원가입 성공
-    setTimeout(() => {
-      onSignUp();
+    // 클라이언트 측 유효성 검사
+    if (!validateForm()) {
       setIsLoading(false);
-    }, 1000);
+      return;
+    }
+    
+    try {
+      const signUpData: SignUpRequest = {
+        companyName: formData.company,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password
+      };
+
+      const response = await userApi.signUp(signUpData);
+      
+      // 회원가입 성공
+      onSignUp();
+    } catch (error: any) {
+      setApiError(error.message || '회원가입에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -108,6 +130,11 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
               <p className="text-slate-500">새 계정 정보를 입력해 주세요</p>
             </CardHeader>
             <CardContent>
+              {apiError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{apiError}</p>
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* 회사명 입력 */}
                 <div className="space-y-3">

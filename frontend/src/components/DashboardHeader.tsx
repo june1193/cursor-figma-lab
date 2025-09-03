@@ -2,12 +2,14 @@ import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { RefreshButton } from "./RefreshButton";
 import { LogOut, User } from "lucide-react";
+import type { User } from "../types/user";
 
 interface DashboardHeaderProps {
   onLogout?: () => void;
+  user?: User | null;
 }
 
-export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
+export function DashboardHeader({ onLogout, user }: DashboardHeaderProps) {
   return (
     <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 shadow-sm">
       <div className="w-full px-6 py-6">
@@ -41,7 +43,7 @@ export function DashboardHeader({ onLogout }: DashboardHeaderProps) {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-slate-600">
                   <User className="w-4 h-4" />
-                  <span className="text-sm font-medium">관리자</span>
+                  <span className="text-sm font-medium">{user?.username || '관리자'}</span>
                 </div>
                 <Button 
                   variant="outline" 

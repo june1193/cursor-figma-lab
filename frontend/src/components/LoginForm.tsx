@@ -4,9 +4,11 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2 } from "lucide-react";
+import { userApi } from "../services/userApi";
+import type { LoginRequest } from "../types/user";
 
 interface LoginFormProps {
-  onLogin: () => void;
+  onLogin: (user: any) => void;
   onSwitchToSignUp: () => void;
 }
 
@@ -18,16 +20,31 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
     company: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
     
-    // 간단한 데모용 인증 로직 - 아무거나 입력해도 로그인 성공
-    setTimeout(() => {
-      onLogin();
+    try {
+      const loginData: LoginRequest = {
+        username: formData.username,
+        password: formData.password
+      };
+
+      const response = await userApi.login(loginData);
+      
+      // 사용자 정보와 토큰 저장
+      userApi.setUser(response.user, response.token);
+      
+      // 로그인 성공 - 사용자 정보를 직접 전달
+      onLogin(response.user);
+    } catch (error: any) {
+      setError(error.message || '로그인에 실패했습니다.');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -58,6 +75,11 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
               <p className="text-slate-500">계정 정보를 입력해 주세요</p>
             </CardHeader>
             <CardContent>
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-6">
                               {/* 회사명 입력 */}
               <div className="space-y-3">
