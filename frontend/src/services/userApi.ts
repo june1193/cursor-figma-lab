@@ -14,13 +14,13 @@ import type {
 export const userApi = {
   // 회원가입
   signUp: async (userData: SignUpRequest): Promise<SignUpResponse> => {
-    const response = await apiClient.post('/users/signup', userData);
+    const response = await apiClient.post('/auth/signup', userData);
     return response.data;
   },
 
   // 로그인
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post('/users/login', credentials);
+    const response = await apiClient.post('/auth/login', credentials);
     return response.data;
   },
 
@@ -44,13 +44,13 @@ export const userApi = {
 
   // 사용자명 중복 확인
   checkUsername: async (username: string): Promise<CheckAvailabilityResponse> => {
-    const response = await apiClient.get(`/users/check-username/${username}`);
+    const response = await apiClient.get(`/auth/check-username/${username}`);
     return response.data;
   },
 
   // 이메일 중복 확인
   checkEmail: async (email: string): Promise<CheckAvailabilityResponse> => {
-    const response = await apiClient.get(`/users/check-email/${email}`);
+    const response = await apiClient.get(`/auth/check-email/${email}`);
     return response.data;
   },
 
