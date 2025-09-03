@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2, Mail, CheckCircle } from "lucide-react";
-import { userApi } from "../services/userApi";
+import { useSignUp } from "../hooks/useDashboardQueries";
 import type { SignUpRequest } from "../types/user";
 
 interface SignUpFormProps {
@@ -22,9 +22,9 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
     password: '',
     confirmPassword: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
-  const [apiError, setApiError] = useState<string>('');
+  
+  const signUpMutation = useSignUp();
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -61,32 +61,29 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setApiError('');
     
     // 클라이언트 측 유효성 검사
     if (!validateForm()) {
-      setIsLoading(false);
       return;
     }
     
-    try {
-      const signUpData: SignUpRequest = {
-        companyName: formData.company,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password
-      };
+    const signUpData: SignUpRequest = {
+      companyName: formData.company,
+      username: formData.username,
+      email: formData.email,
+      password: formData.password
+    };
 
-      const response = await userApi.signUp(signUpData);
-      
-      // 회원가입 성공
-      onSignUp();
-    } catch (error: any) {
-      setApiError(error.message || '회원가입에 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
+    signUpMutation.mutate(signUpData, {
+      onSuccess: () => {
+        // 회원가입 성공
+        onSignUp();
+      },
+      onError: (error: any) => {
+        // 에러는 React Query가 자동으로 처리
+        console.error('SignUp error:', error);
+      }
+    });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -130,9 +127,9 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
               <p className="text-slate-500">새 계정 정보를 입력해 주세요</p>
             </CardHeader>
             <CardContent>
-              {apiError && (
+              {signUpMutation.isError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-sm">{apiError}</p>
+                  <p className="text-red-600 text-sm">{signUpMutation.error?.message || '회원가입에 실패했습니다.'}</p>
                 </div>
               )}
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -241,9 +238,9 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                 <Button 
                   type="submit" 
                   className="w-full h-12 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
-                  disabled={isLoading}
+                  disabled={signUpMutation.isPending}
                 >
-                  {isLoading ? (
+                  {signUpMutation.isPending ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       계정 생성 중...

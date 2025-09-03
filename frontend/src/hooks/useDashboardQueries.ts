@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService, ProductManagement, SalesPerson, Institution, CommissionStatus } from '../services/api';
+import { userApi } from '../services/userApi';
 import { IApiError } from '../types/error';
 import { getErrorMessage, logError } from '../utils/errorHandler';
+import type { LoginRequest, SignUpRequest, User } from '../types/user';
 
 // Query Keys
 export const queryKeys = {
@@ -13,6 +15,9 @@ export const queryKeys = {
   institutionById: (id: number) => ['institution', id] as const,
   commissionStatus: ['commissionStatus'] as const,
   commissionStatusById: (id: number) => ['commissionStatus', id] as const,
+  // User related query keys
+  currentUser: ['currentUser'] as const,
+  userById: (id: number) => ['user', id] as const,
 };
 
 // 제품별 판매현황 Queries
@@ -143,6 +148,73 @@ export const useUpdateCommissionStatus = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.commissionStatus });
       // 특정 수수료 현황 캐시 업데이트
       queryClient.setQueryData(queryKeys.commissionStatusById(updatedData.id), updatedData);
+    },
+  });
+};
+
+// User Authentication Queries & Mutations
+export const useCurrentUser = () => {
+  return useQuery({
+    queryKey: queryKeys.currentUser,
+    queryFn: () => {
+      const user = userApi.getCurrentUser();
+      if (!user) {
+        throw new Error('No user found');
+      }
+      return user;
+    },
+    enabled: userApi.isAuthenticated(),
+    staleTime: 5 * 60 * 1000, // 5분
+  });
+};
+
+export const useUserById = (id: number) => {
+  return useQuery({
+    queryKey: queryKeys.userById(id),
+    queryFn: () => userApi.getUserById(id),
+    enabled: !!id,
+  });
+};
+
+// User Authentication Mutations
+export const useLogin = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (loginData: LoginRequest) => userApi.login(loginData),
+    onSuccess: (response) => {
+      // 사용자 정보와 토큰 저장
+      userApi.setUser(response.user, response.token);
+      // 현재 사용자 캐시 설정
+      queryClient.setQueryData(queryKeys.currentUser, response.user);
+    },
+    onError: (error: IApiError) => {
+      logError(error, 'useLogin');
+    },
+  });
+};
+
+export const useSignUp = () => {
+  return useMutation({
+    mutationFn: (signUpData: SignUpRequest) => userApi.signUp(signUpData),
+    onError: (error: IApiError) => {
+      logError(error, 'useSignUp');
+    },
+  });
+};
+
+export const useLogout = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: () => {
+      userApi.logout();
+      return Promise.resolve();
+    },
+    onSuccess: () => {
+      // 모든 사용자 관련 캐시 제거
+      queryClient.removeQueries({ queryKey: queryKeys.currentUser });
+      queryClient.clear();
     },
   });
 };

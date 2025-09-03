@@ -4,50 +4,33 @@ import { SignUpForm } from "./components/SignUpForm";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { ChartsSection } from "./components/ChartsSection";
 import { DataTablesSection } from "./components/DataTablesSection";
+import { useCurrentUser, useLogout } from "./hooks/useDashboardQueries";
 import { userApi } from "./services/userApi";
 import type { User } from "./types/user";
 
 type AuthMode = 'login' | 'signup';
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>('login');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-
-  // 컴포넌트 마운트 시 인증 상태 확인
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      if (userApi.isAuthenticated()) {
-        const user = userApi.getCurrentUser();
-        if (user) {
-          setCurrentUser(user);
-          setIsLoggedIn(true);
-        }
-      }
-    };
-
-    checkAuthStatus();
-  }, []);
+  
+  // React Query hooks
+  const { data: currentUser, isLoading: userLoading } = useCurrentUser();
+  const logoutMutation = useLogout();
+  
+  const isLoggedIn = !!currentUser;
 
   const handleLogin = (user: any) => {
-    // 로그인 성공 시 사용자 정보를 직접 받아서 상태 업데이트
-    setCurrentUser(user);
-    setIsLoggedIn(true);
+    // React Query가 자동으로 currentUser 상태를 업데이트함
+    // 추가 작업이 필요하면 여기에 작성
   };
 
   const handleSignUp = () => {
     // 회원가입 후 자동으로 로그인 처리
-    const user = userApi.getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-      setIsLoggedIn(true);
-    }
+    // React Query가 자동으로 처리함
   };
 
   const handleLogout = () => {
-    userApi.logout();
-    setCurrentUser(null);
-    setIsLoggedIn(false);
+    logoutMutation.mutate();
     setAuthMode('login'); // 로그아웃 시 로그인 페이지로 리셋
   };
 
@@ -58,6 +41,18 @@ export default function App() {
   const switchToLogin = () => {
     setAuthMode('login');
   };
+
+  // 로딩 중인 경우
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-slate-300 border-t-slate-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   // 로그인하지 않은 경우 로그인/회원가입 폼 표시
   if (!isLoggedIn) {

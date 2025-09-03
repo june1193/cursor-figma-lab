@@ -4,7 +4,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2 } from "lucide-react";
-import { userApi } from "../services/userApi";
+import { useLogin } from "../hooks/useDashboardQueries";
 import type { LoginRequest } from "../types/user";
 
 interface LoginFormProps {
@@ -19,32 +19,27 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
     password: '',
     company: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>('');
+  
+  const loginMutation = useLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
     
-    try {
-      const loginData: LoginRequest = {
-        username: formData.username,
-        password: formData.password
-      };
+    const loginData: LoginRequest = {
+      username: formData.username,
+      password: formData.password
+    };
 
-      const response = await userApi.login(loginData);
-      
-      // 사용자 정보와 토큰 저장
-      userApi.setUser(response.user, response.token);
-      
-      // 로그인 성공 - 사용자 정보를 직접 전달
-      onLogin(response.user);
-    } catch (error: any) {
-      setError(error.message || '로그인에 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
+    loginMutation.mutate(loginData, {
+      onSuccess: (response) => {
+        // 로그인 성공 - 사용자 정보를 직접 전달
+        onLogin(response.user);
+      },
+      onError: (error: any) => {
+        // 에러는 React Query가 자동으로 처리
+        console.error('Login error:', error);
+      }
+    });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -75,9 +70,9 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
               <p className="text-slate-500">계정 정보를 입력해 주세요</p>
             </CardHeader>
             <CardContent>
-              {error && (
+              {loginMutation.isError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-sm">{error}</p>
+                  <p className="text-red-600 text-sm">{loginMutation.error?.message || '로그인에 실패했습니다.'}</p>
                 </div>
               )}
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -139,9 +134,9 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
                 <Button 
                   type="submit" 
                   className="w-full h-12 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                 >
-                  {isLoading ? (
+                  {loginMutation.isPending ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       로그인 중...
