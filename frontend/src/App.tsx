@@ -7,6 +7,7 @@ import { DataTablesSection } from "./components/DataTablesSection";
 import { useCurrentUser, useLogout } from "./hooks/useDashboardQueries";
 import { userApi } from "./services/userApi";
 import type { User } from "./types/user";
+import { PageLoadingSpinner } from "./components/ui/LoadingSpinner";
 
 type AuthMode = 'login' | 'signup';
 
@@ -44,14 +45,7 @@ export default function App() {
 
   // 로딩 중인 경우
   if (userLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-slate-300 border-t-slate-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600">로딩 중...</p>
-        </div>
-      </div>
-    );
+    return <PageLoadingSpinner />;
   }
 
   // 로그인하지 않은 경우 로그인/회원가입 폼 표시

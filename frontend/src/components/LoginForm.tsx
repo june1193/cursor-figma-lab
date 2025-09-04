@@ -6,6 +6,8 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2 } from "lucide-react";
+import { ButtonLoadingSpinner } from "./ui/LoadingSpinner";
+import { FormErrorMessage } from "./ui/ErrorMessage";
 import { useLogin } from "../hooks/useDashboardQueries";
 import type { LoginRequest } from "../types/user";
 import { sanitizeInput } from "../utils/security";
@@ -102,9 +104,7 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
                         errors.company ? 'border-red-400 focus:border-red-500' : ''
                       }`}
                     />
-                    {errors.company && (
-                      <p className="text-red-500 text-sm mt-2">{errors.company.message}</p>
-                    )}
+                    <FormErrorMessage message={errors.company?.message} />
                   </div>
                 </div>
 
@@ -122,9 +122,7 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
                         errors.username ? 'border-red-400 focus:border-red-500' : ''
                       }`}
                     />
-                    {errors.username && (
-                      <p className="text-red-500 text-sm mt-2">{errors.username.message}</p>
-                    )}
+                    <FormErrorMessage message={errors.username?.message} />
                   </div>
                 </div>
 
@@ -149,9 +147,7 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
-                    {errors.password && (
-                      <p className="text-red-500 text-sm mt-2">{errors.password.message}</p>
-                    )}
+                    <FormErrorMessage message={errors.password?.message} />
                   </div>
                 </div>
 
@@ -162,10 +158,7 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
                   disabled={isSubmitting || loginMutation.isPending}
                 >
                   {(isSubmitting || loginMutation.isPending) ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      로그인 중...
-                    </div>
+                    <ButtonLoadingSpinner />
                   ) : (
                     '로그인'
                   )}

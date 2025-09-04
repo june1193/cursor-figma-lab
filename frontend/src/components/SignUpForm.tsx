@@ -6,6 +6,8 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2, Mail, CheckCircle } from "lucide-react";
+import { ButtonLoadingSpinner } from "./ui/LoadingSpinner";
+import { FormErrorMessage } from "./ui/ErrorMessage";
 import { useSignUp } from "../hooks/useDashboardQueries";
 import type { SignUpRequest } from "../types/user";
 import { sanitizeInput } from "../utils/security";
@@ -107,9 +109,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                         errors.company ? 'border-red-400 focus:border-red-500' : ''
                       }`}
                     />
-                    {errors.company && (
-                      <p className="text-red-500 text-sm mt-2">{errors.company.message}</p>
-                    )}
+                    <FormErrorMessage message={errors.company?.message} />
                   </div>
                 </div>
 
@@ -127,9 +127,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                         errors.username ? 'border-red-400 focus:border-red-500' : ''
                       }`}
                     />
-                    {errors.username && (
-                      <p className="text-red-500 text-sm mt-2">{errors.username.message}</p>
-                    )}
+                    <FormErrorMessage message={errors.username?.message} />
                   </div>
                 </div>
 
@@ -147,9 +145,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                         errors.email ? 'border-red-400 focus:border-red-500' : ''
                       }`}
                     />
-                    {errors.email && (
-                      <p className="text-red-500 text-sm mt-2">{errors.email.message}</p>
-                    )}
+                    <FormErrorMessage message={errors.email?.message} />
                   </div>
                 </div>
 
@@ -175,9 +171,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
-                    {errors.password && (
-                      <p className="text-red-500 text-sm mt-2">{errors.password.message}</p>
-                    )}
+                    <FormErrorMessage message={errors.password?.message} />
                   </div>
                 </div>
 
@@ -202,9 +196,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                     >
                       {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
-                    {errors.confirmPassword && (
-                      <p className="text-red-500 text-sm mt-2">{errors.confirmPassword.message}</p>
-                    )}
+                    <FormErrorMessage message={errors.confirmPassword?.message} />
                     {watchedValues.password && watchedValues.confirmPassword && watchedValues.password === watchedValues.confirmPassword && (
                       <div className="flex items-center gap-2 mt-2 text-green-600">
                         <CheckCircle className="w-4 h-4" />
@@ -221,10 +213,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                   disabled={isSubmitting || signUpMutation.isPending || !isValid}
                 >
                   {(isSubmitting || signUpMutation.isPending) ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      계정 생성 중...
-                    </div>
+                    <ButtonLoadingSpinner />
                   ) : (
                     '회원가입'
                   )}

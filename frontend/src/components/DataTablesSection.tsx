@@ -3,6 +3,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { useDashboardData } from "../hooks/useDashboardQueries";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { IApiError } from "../types/error";
+import { CardLoadingSpinner } from "./ui/LoadingSpinner";
+import { CardErrorMessage } from "./ui/ErrorMessage";
 
 export function DataTablesSection() {
   const { 
@@ -19,9 +21,7 @@ export function DataTablesSection() {
   if (isLoading) {
     return (
       <div className="col-span-12 lg:col-span-8 space-y-8">
-        <div className="text-center py-8">
-          <div className="text-lg text-slate-600">데이터를 불러오는 중...</div>
-        </div>
+        <CardLoadingSpinner />
       </div>
     );
   }
@@ -30,9 +30,9 @@ export function DataTablesSection() {
   if (isError && error) {
     return (
       <div className="col-span-12 lg:col-span-8 space-y-8">
-        <ErrorDisplay 
-          error={error as IApiError}
+        <CardErrorMessage 
           title="데이터를 불러오는데 실패했습니다"
+          error={error}
           onRetry={() => window.location.reload()}
         />
       </div>
