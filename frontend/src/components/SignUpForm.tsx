@@ -1,17 +1,20 @@
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Eye, EyeOff, User, Lock, Building2, Mail, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Eye, EyeOff, User, Lock, Building2, Mail, CheckCircle } from "lucide-react";
-import { ButtonLoadingSpinner } from "./ui/LoadingSpinner";
-import { FormErrorMessage } from "./ui/ErrorMessage";
+
 import { useSignUp } from "../hooks/useDashboardQueries";
+import { signUpSchema, type SignUpFormData } from "../schemas/validationSchemas";
 import type { SignUpRequest } from "../types/user";
 import { sanitizeInput } from "../utils/security";
-import { signUpSchema, type SignUpFormData } from "../schemas/validationSchemas";
+
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { FormErrorMessage } from "./ui/ErrorMessage";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { ButtonLoadingSpinner } from "./ui/LoadingSpinner";
+
 
 interface SignUpFormProps {
   onSignUp: () => void;

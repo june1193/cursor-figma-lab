@@ -1,17 +1,20 @@
+import { yupResolver } from "@hookform/resolvers/yup";
+import { Eye, EyeOff, Building2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Eye, EyeOff, User, Lock, Building2 } from "lucide-react";
-import { ButtonLoadingSpinner } from "./ui/LoadingSpinner";
-import { FormErrorMessage } from "./ui/ErrorMessage";
+
 import { useLogin } from "../hooks/useDashboardQueries";
+import { loginSchema, type LoginFormData } from "../schemas/validationSchemas";
 import type { LoginRequest } from "../types/user";
 import { sanitizeInput } from "../utils/security";
-import { loginSchema, type LoginFormData } from "../schemas/validationSchemas";
+
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { FormErrorMessage } from "./ui/ErrorMessage";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { ButtonLoadingSpinner } from "./ui/LoadingSpinner";
+
 
 interface LoginFormProps {
   onLogin: (user: any) => void;
@@ -41,7 +44,7 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
   });
 
   // 입력값 감시 및 XSS 방지 처리
-  const watchedValues = watch();
+  watch();
   const handleInputChange = (field: keyof LoginFormData, value: string) => {
     const sanitizedValue = sanitizeInput(value);
     setValue(field, sanitizedValue, { shouldValidate: true });

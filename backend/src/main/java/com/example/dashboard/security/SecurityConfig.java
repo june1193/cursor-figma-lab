@@ -52,9 +52,10 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             // XSS 방지 및 보안 헤더 설정
             .headers(headers -> headers
-                .contentSecurityPolicy("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'")
-                .and()
-                .frameOptions().deny()
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'")
+                )
+                .frameOptions(frameOptions -> frameOptions.deny())
             );
 
         return http.build();
