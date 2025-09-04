@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2, Mail, CheckCircle } from "lucide-react";
 import { useSignUp } from "../hooks/useDashboardQueries";
 import type { SignUpRequest } from "../types/user";
+import { sanitizeInput, isValidUsername, isValidEmail, validatePassword } from "../utils/security";
 
 interface SignUpFormProps {
   onSignUp: () => void;
@@ -35,18 +36,23 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
     
     if (!formData.username.trim()) {
       newErrors.username = '사용자명을 입력해주세요';
+    } else if (!isValidUsername(formData.username)) {
+      newErrors.username = '사용자명은 영문, 숫자, 언더스코어만 사용 가능하며 3-20자여야 합니다';
     }
     
     if (!formData.email.trim()) {
       newErrors.email = '이메일을 입력해주세요';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!isValidEmail(formData.email)) {
       newErrors.email = '올바른 이메일 형식이 아닙니다';
     }
     
     if (!formData.password) {
       newErrors.password = '비밀번호를 입력해주세요';
-    } else if (formData.password.length < 6) {
-      newErrors.password = '비밀번호는 6자 이상이어야 합니다';
+    } else {
+      const passwordValidation = validatePassword(formData.password);
+      if (!passwordValidation.isValid) {
+        newErrors.password = passwordValidation.message;
+      }
     }
     
     if (!formData.confirmPassword) {
@@ -87,9 +93,12 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
   };
 
   const handleInputChange = (field: string, value: string) => {
+    // XSS 방지를 위한 입력값 정제
+    const sanitizedValue = sanitizeInput(value);
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: sanitizedValue
     }));
     
     // 해당 필드의 에러 제거
@@ -103,8 +112,9 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
 
   const isFormValid = Object.values(formData).every(value => value.trim() !== '') && 
                      formData.password === formData.confirmPassword &&
-                     formData.password.length >= 6 &&
-                     /\S+@\S+\.\S+/.test(formData.email);
+                     isValidUsername(formData.username) &&
+                     isValidEmail(formData.email) &&
+                     validatePassword(formData.password).isValid;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 flex flex-col">

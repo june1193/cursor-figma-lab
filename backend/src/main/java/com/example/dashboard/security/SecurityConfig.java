@@ -36,7 +36,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 // 공개 엔드포인트
-                .requestMatchers("/api/users/signup", "/api/users/login").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/users/check-username/**", "/api/users/check-email/**").permitAll()
                 // 기존 대시보드 API들도 임시로 허용 (나중에 인증 필요로 변경 가능)
                 .requestMatchers("/api/**").permitAll()
@@ -45,7 +45,20 @@ public class SecurityConfig {
                 // 나머지 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            // XSS 방지 및 보안 헤더 설정
+            .headers(headers -> headers
+                .contentSecurityPolicy("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'")
+                .and()
+                .frameOptions().deny()
+                .and()
+                .xssProtection().block(true)
+                .and()
+                .httpStrictTransportSecurity(hstsConfig -> hstsConfig
+                    .maxAgeInSeconds(31536000)
+                    .includeSubdomains(true)
+                )
+            );
 
         return http.build();
     }

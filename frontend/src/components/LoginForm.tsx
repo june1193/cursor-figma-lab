@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2 } from "lucide-react";
 import { useLogin } from "../hooks/useDashboardQueries";
 import type { LoginRequest } from "../types/user";
+import { sanitizeInput, isValidUsername } from "../utils/security";
 
 interface LoginFormProps {
   onLogin: (user: any) => void;
@@ -43,9 +44,12 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
   };
 
   const handleInputChange = (field: string, value: string) => {
+    // XSS 방지를 위한 입력값 정제
+    const sanitizedValue = sanitizeInput(value);
+    
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: sanitizedValue
     }));
   };
 
