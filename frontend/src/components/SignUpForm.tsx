@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -6,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2, Mail, CheckCircle } from "lucide-react";
 import { useSignUp } from "../hooks/useDashboardQueries";
 import type { SignUpRequest } from "../types/user";
-import { sanitizeInput, isValidUsername, isValidEmail, validatePassword } from "../utils/security";
+import { sanitizeInput } from "../utils/security";
+import { signUpSchema, type SignUpFormData } from "../schemas/validationSchemas";
 
 interface SignUpFormProps {
   onSignUp: () => void;
@@ -16,105 +19,52 @@ interface SignUpFormProps {
 export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    company: '',
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
   
   const signUpMutation = useSignUp();
 
-  const validateForm = () => {
-    const newErrors: {[key: string]: string} = {};
-    
-    if (!formData.company.trim()) {
-      newErrors.company = '회사명을 입력해주세요';
+  // React Hook Form 설정
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, isValid },
+    setValue,
+    watch
+  } = useForm<SignUpFormData>({
+    resolver: yupResolver(signUpSchema),
+    mode: 'onChange', // 실시간 검증
+    defaultValues: {
+      company: '',
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
     }
-    
-    if (!formData.username.trim()) {
-      newErrors.username = '사용자명을 입력해주세요';
-    } else if (!isValidUsername(formData.username)) {
-      newErrors.username = '사용자명은 영문, 숫자, 언더스코어만 사용 가능하며 3-20자여야 합니다';
-    }
-    
-    if (!formData.email.trim()) {
-      newErrors.email = '이메일을 입력해주세요';
-    } else if (!isValidEmail(formData.email)) {
-      newErrors.email = '올바른 이메일 형식이 아닙니다';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = '비밀번호를 입력해주세요';
-    } else {
-      const passwordValidation = validatePassword(formData.password);
-      if (!passwordValidation.isValid) {
-        newErrors.password = passwordValidation.message;
-      }
-    }
-    
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = '비밀번호 확인을 입력해주세요';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = '비밀번호가 일치하지 않습니다';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  });
+
+  // 입력값 감시 및 XSS 방지 처리
+  const watchedValues = watch();
+  const handleInputChange = (field: keyof SignUpFormData, value: string) => {
+    const sanitizedValue = sanitizeInput(value);
+    setValue(field, sanitizedValue, { shouldValidate: true });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // 클라이언트 측 유효성 검사
-    if (!validateForm()) {
-      return;
-    }
-    
+  const onSubmit = async (data: SignUpFormData) => {
     const signUpData: SignUpRequest = {
-      companyName: formData.company,
-      username: formData.username,
-      email: formData.email,
-      password: formData.password
+      companyName: data.company,
+      username: data.username,
+      email: data.email,
+      password: data.password
     };
 
     signUpMutation.mutate(signUpData, {
       onSuccess: () => {
-        // 회원가입 성공
         onSignUp();
       },
       onError: (error: any) => {
-        // 에러는 React Query가 자동으로 처리
         console.error('SignUp error:', error);
       }
     });
   };
-
-  const handleInputChange = (field: string, value: string) => {
-    // XSS 방지를 위한 입력값 정제
-    const sanitizedValue = sanitizeInput(value);
-    
-    setFormData(prev => ({
-      ...prev,
-      [field]: sanitizedValue
-    }));
-    
-    // 해당 필드의 에러 제거
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }));
-    }
-  };
-
-  const isFormValid = Object.values(formData).every(value => value.trim() !== '') && 
-                     formData.password === formData.confirmPassword &&
-                     isValidUsername(formData.username) &&
-                     isValidEmail(formData.email) &&
-                     validatePassword(formData.password).isValid;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 flex flex-col">
@@ -142,7 +92,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                   <p className="text-red-600 text-sm">{signUpMutation.error?.message || '회원가입에 실패했습니다.'}</p>
                 </div>
               )}
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* 회사명 입력 */}
                 <div className="space-y-3">
                   <Label htmlFor="company" className="text-base text-slate-700 font-medium">회사명</Label>
@@ -151,11 +101,15 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                       id="company"
                       type="text"
                       placeholder="회사명을 입력하세요"
-                      value={formData.company}
+                      {...register('company')}
                       onChange={(e) => handleInputChange('company', e.target.value)}
-                      className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${errors.company ? 'border-red-400 focus:border-red-500' : ''}`}
+                      className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
+                        errors.company ? 'border-red-400 focus:border-red-500' : ''
+                      }`}
                     />
-                    {errors.company && <p className="text-red-500 text-sm mt-2">{errors.company}</p>}
+                    {errors.company && (
+                      <p className="text-red-500 text-sm mt-2">{errors.company.message}</p>
+                    )}
                   </div>
                 </div>
 
@@ -167,11 +121,15 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                       id="username"
                       type="text"
                       placeholder="사용자명을 입력하세요"
-                      value={formData.username}
+                      {...register('username')}
                       onChange={(e) => handleInputChange('username', e.target.value)}
-                      className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${errors.username ? 'border-red-400 focus:border-red-500' : ''}`}
+                      className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
+                        errors.username ? 'border-red-400 focus:border-red-500' : ''
+                      }`}
                     />
-                    {errors.username && <p className="text-red-500 text-sm mt-2">{errors.username}</p>}
+                    {errors.username && (
+                      <p className="text-red-500 text-sm mt-2">{errors.username.message}</p>
+                    )}
                   </div>
                 </div>
 
@@ -183,11 +141,15 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                       id="email"
                       type="email"
                       placeholder="이메일을 입력하세요"
-                      value={formData.email}
+                      {...register('email')}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${errors.email ? 'border-red-400 focus:border-red-500' : ''}`}
+                      className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
+                        errors.email ? 'border-red-400 focus:border-red-500' : ''
+                      }`}
                     />
-                    {errors.email && <p className="text-red-500 text-sm mt-2">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="text-red-500 text-sm mt-2">{errors.email.message}</p>
+                    )}
                   </div>
                 </div>
 
@@ -199,10 +161,12 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="비밀번호를 입력하세요 (6자 이상)"
-                      value={formData.password}
+                      placeholder="비밀번호를 입력하세요 (8자 이상)"
+                      {...register('password')}
                       onChange={(e) => handleInputChange('password', e.target.value)}
-                      className={`pr-12 h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${errors.password ? 'border-red-400 focus:border-red-500' : ''}`}
+                      className={`pr-12 h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
+                        errors.password ? 'border-red-400 focus:border-red-500' : ''
+                      }`}
                     />
                     <button
                       type="button"
@@ -211,7 +175,9 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
-                    {errors.password && <p className="text-red-500 text-sm mt-2">{errors.password}</p>}
+                    {errors.password && (
+                      <p className="text-red-500 text-sm mt-2">{errors.password.message}</p>
+                    )}
                   </div>
                 </div>
 
@@ -223,9 +189,11 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="비밀번호를 다시 입력하세요"
-                      value={formData.confirmPassword}
+                      {...register('confirmPassword')}
                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                      className={`pr-12 h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${errors.confirmPassword ? 'border-red-400 focus:border-red-500' : ''}`}
+                      className={`pr-12 h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
+                        errors.confirmPassword ? 'border-red-400 focus:border-red-500' : ''
+                      }`}
                     />
                     <button
                       type="button"
@@ -234,8 +202,10 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                     >
                       {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
-                    {errors.confirmPassword && <p className="text-red-500 text-sm mt-2">{errors.confirmPassword}</p>}
-                    {formData.password && formData.confirmPassword && formData.password === formData.confirmPassword && (
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-sm mt-2">{errors.confirmPassword.message}</p>
+                    )}
+                    {watchedValues.password && watchedValues.confirmPassword && watchedValues.password === watchedValues.confirmPassword && (
                       <div className="flex items-center gap-2 mt-2 text-green-600">
                         <CheckCircle className="w-4 h-4" />
                         <span className="text-sm">비밀번호가 일치합니다</span>
@@ -248,9 +218,9 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
                 <Button 
                   type="submit" 
                   className="w-full h-12 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
-                  disabled={signUpMutation.isPending}
+                  disabled={isSubmitting || signUpMutation.isPending || !isValid}
                 >
-                  {signUpMutation.isPending ? (
+                  {(isSubmitting || signUpMutation.isPending) ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       계정 생성 중...

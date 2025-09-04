@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -6,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, EyeOff, User, Lock, Building2 } from "lucide-react";
 import { useLogin } from "../hooks/useDashboardQueries";
 import type { LoginRequest } from "../types/user";
-import { sanitizeInput, isValidUsername } from "../utils/security";
+import { sanitizeInput } from "../utils/security";
+import { loginSchema, type LoginFormData } from "../schemas/validationSchemas";
 
 interface LoginFormProps {
   onLogin: (user: any) => void;
@@ -15,42 +18,47 @@ interface LoginFormProps {
 
 export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    company: ''
-  });
   
   const loginMutation = useLogin();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  // React Hook Form 설정
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch
+  } = useForm<LoginFormData>({
+    resolver: yupResolver(loginSchema),
+    mode: 'onChange', // 실시간 검증
+    defaultValues: {
+      username: '',
+      password: '',
+      company: ''
+    }
+  });
+
+  // 입력값 감시 및 XSS 방지 처리
+  const watchedValues = watch();
+  const handleInputChange = (field: keyof LoginFormData, value: string) => {
+    const sanitizedValue = sanitizeInput(value);
+    setValue(field, sanitizedValue, { shouldValidate: true });
+  };
+
+  const onSubmit = async (data: LoginFormData) => {
     const loginData: LoginRequest = {
-      username: formData.username,
-      password: formData.password
+      username: data.username,
+      password: data.password
     };
 
     loginMutation.mutate(loginData, {
       onSuccess: (response) => {
-        // 로그인 성공 - 사용자 정보를 직접 전달
         onLogin(response.user);
       },
       onError: (error: any) => {
-        // 에러는 React Query가 자동으로 처리
         console.error('Login error:', error);
       }
     });
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    // XSS 방지를 위한 입력값 정제
-    const sanitizedValue = sanitizeInput(value);
-    
-    setFormData(prev => ({
-      ...prev,
-      [field]: sanitizedValue
-    }));
   };
 
   return (
@@ -79,68 +87,81 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
                   <p className="text-red-600 text-sm">{loginMutation.error?.message || '로그인에 실패했습니다.'}</p>
                 </div>
               )}
-              <form onSubmit={handleSubmit} className="space-y-6">
-                              {/* 회사명 입력 */}
-              <div className="space-y-3">
-                <Label htmlFor="company" className="text-base text-slate-700 font-medium">회사명</Label>
-                <div className="relative">
-                  <Input
-                    id="company"
-                    type="text"
-                    placeholder="회사명을 입력하세요"
-                    value={formData.company}
-                    onChange={(e) => handleInputChange('company', e.target.value)}
-                    className="h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200"
-                  />
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                {/* 회사명 입력 */}
+                <div className="space-y-3">
+                  <Label htmlFor="company" className="text-base text-slate-700 font-medium">회사명</Label>
+                  <div className="relative">
+                    <Input
+                      id="company"
+                      type="text"
+                      placeholder="회사명을 입력하세요"
+                      {...register('company')}
+                      onChange={(e) => handleInputChange('company', e.target.value)}
+                      className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
+                        errors.company ? 'border-red-400 focus:border-red-500' : ''
+                      }`}
+                    />
+                    {errors.company && (
+                      <p className="text-red-500 text-sm mt-2">{errors.company.message}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* 사용자명 입력 */}
-              <div className="space-y-3">
-                <Label htmlFor="username" className="text-base text-slate-700 font-medium">사용자명</Label>
-                <div className="relative">
-                  <Input
-                    id="username"
-                    type="text"
-                    placeholder="사용자명을 입력하세요"
-                    value={formData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value)}
-                    className="h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200"
-                    required
-                  />
+                {/* 사용자명 입력 */}
+                <div className="space-y-3">
+                  <Label htmlFor="username" className="text-base text-slate-700 font-medium">사용자명</Label>
+                  <div className="relative">
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="사용자명을 입력하세요"
+                      {...register('username')}
+                      onChange={(e) => handleInputChange('username', e.target.value)}
+                      className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
+                        errors.username ? 'border-red-400 focus:border-red-500' : ''
+                      }`}
+                    />
+                    {errors.username && (
+                      <p className="text-red-500 text-sm mt-2">{errors.username.message}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* 비밀번호 입력 */}
-              <div className="space-y-3">
-                <Label htmlFor="password" className="text-base text-slate-700 font-medium">비밀번호</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="비밀번호를 입력하세요"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    className="pr-12 h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
+                {/* 비밀번호 입력 */}
+                <div className="space-y-3">
+                  <Label htmlFor="password" className="text-base text-slate-700 font-medium">비밀번호</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="비밀번호를 입력하세요"
+                      {...register('password')}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      className={`pr-12 h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
+                        errors.password ? 'border-red-400 focus:border-red-500' : ''
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                    {errors.password && (
+                      <p className="text-red-500 text-sm mt-2">{errors.password.message}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
 
                 {/* 로그인 버튼 */}
                 <Button 
                   type="submit" 
                   className="w-full h-12 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
-                  disabled={loginMutation.isPending}
+                  disabled={isSubmitting || loginMutation.isPending}
                 >
-                  {loginMutation.isPending ? (
+                  {(isSubmitting || loginMutation.isPending) ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       로그인 중...
