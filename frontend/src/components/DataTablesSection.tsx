@@ -39,11 +39,11 @@ export function DataTablesSection() {
     );
   }
 
-  // 데이터가 없는 경우 처리
-  const productManagementData = productManagement.data || [];
-  const salesPersonData = salesPersons.data || [];
-  const institutionData = institutions.data || [];
-  const commissionData = commissionStatus.data || [];
+  // 데이터가 없는 경우 처리 (select 옵션으로 인해 구조가 변경됨)
+  const productManagementData = productManagement.data?.items || [];
+  const salesPersonData = salesPersons.data?.items || [];
+  const institutionData = institutions.data?.items || [];
+  const commissionData = commissionStatus.data?.items || [];
 
   // API 데이터를 테이블 형식으로 변환
   const productData = productManagementData.map(item => ({

@@ -23,6 +23,9 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private XssProtectionFilter xssProtectionFilter;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -45,19 +48,13 @@ public class SecurityConfig {
                 // 나머지 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(xssProtectionFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             // XSS 방지 및 보안 헤더 설정
             .headers(headers -> headers
                 .contentSecurityPolicy("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'")
                 .and()
                 .frameOptions().deny()
-                .and()
-                .xssProtection().block(true)
-                .and()
-                .httpStrictTransportSecurity(hstsConfig -> hstsConfig
-                    .maxAgeInSeconds(31536000)
-                    .includeSubdomains(true)
-                )
             );
 
         return http.build();

@@ -4,6 +4,12 @@ import { userApi } from '../services/userApi';
 import { IApiError } from '../types/error';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import type { LoginRequest, SignUpRequest, User } from '../types/user';
+import { 
+  dashboardQueryDefaults, 
+  individualQueryDefaults, 
+  authQueryDefaults,
+  createErrorHandler 
+} from './useQueryDefaults';
 
 // Query Keys
 export const queryKeys = {
@@ -25,10 +31,15 @@ export const useProductManagement = () => {
   return useQuery({
     queryKey: queryKeys.productManagement,
     queryFn: apiService.getProductManagement,
-    staleTime: 5 * 60 * 1000, // 5분
-    onError: (error: IApiError) => {
-      logError(error, 'useProductManagement');
-    },
+    ...dashboardQueryDefaults, // 통합된 기본 설정 사용
+    select: (data) => ({
+      // 필요한 데이터만 추출하여 성능 최적화
+      items: data,
+      totalCount: data.length,
+      totalAmount: data.reduce((sum, item) => sum + (item.amount || 0), 0),
+      activeCount: data.filter(item => item.status === 'active').length,
+    }),
+    onError: createErrorHandler('useProductManagement'), // 통합된 에러 핸들러 사용
   });
 };
 
@@ -37,6 +48,7 @@ export const useProductManagementById = (id: number) => {
     queryKey: queryKeys.productManagementById(id),
     queryFn: () => apiService.getProductManagementById(id),
     enabled: !!id,
+    ...individualQueryDefaults, // 통합된 기본 설정 사용
   });
 };
 
@@ -45,7 +57,16 @@ export const useSalesPersons = () => {
   return useQuery({
     queryKey: queryKeys.salesPersons,
     queryFn: apiService.getSalesPersons,
-    staleTime: 5 * 60 * 1000, // 5분
+    ...dashboardQueryDefaults, // 통합된 기본 설정 사용
+    select: (data) => ({
+      // 필요한 데이터만 추출하여 성능 최적화
+      items: data,
+      totalCount: data.length,
+      totalSales: data.reduce((sum, item) => sum + (item.salesAmount || 0), 0),
+      topPerformers: data
+        .sort((a, b) => (b.salesAmount || 0) - (a.salesAmount || 0))
+        .slice(0, 5),
+    }),
   });
 };
 
@@ -54,6 +75,7 @@ export const useSalesPersonById = (id: number) => {
     queryKey: queryKeys.salesPersonById(id),
     queryFn: () => apiService.getSalesPersonById(id),
     enabled: !!id,
+    ...individualQueryDefaults, // 통합된 기본 설정 사용
   });
 };
 
@@ -62,7 +84,18 @@ export const useInstitutions = () => {
   return useQuery({
     queryKey: queryKeys.institutions,
     queryFn: apiService.getInstitutions,
-    staleTime: 5 * 60 * 1000, // 5분
+    ...dashboardQueryDefaults, // 통합된 기본 설정 사용
+    select: (data) => ({
+      // 필요한 데이터만 추출하여 성능 최적화
+      items: data,
+      totalCount: data.length,
+      totalVolume: data.reduce((sum, item) => sum + (item.volume || 0), 0),
+      institutionsByType: data.reduce((acc, item) => {
+        const type = item.type || '기타';
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+    }),
   });
 };
 
@@ -71,6 +104,7 @@ export const useInstitutionById = (id: number) => {
     queryKey: queryKeys.institutionById(id),
     queryFn: () => apiService.getInstitutionById(id),
     enabled: !!id,
+    ...individualQueryDefaults, // 통합된 기본 설정 사용
   });
 };
 
@@ -79,7 +113,21 @@ export const useCommissionStatus = () => {
   return useQuery({
     queryKey: queryKeys.commissionStatus,
     queryFn: apiService.getCommissionStatus,
-    staleTime: 5 * 60 * 1000, // 5분
+    ...dashboardQueryDefaults, // 통합된 기본 설정 사용
+    select: (data) => ({
+      // 필요한 데이터만 추출하여 성능 최적화
+      items: data,
+      totalCount: data.length,
+      totalCommission: data.reduce((sum, item) => sum + (item.commission || 0), 0),
+      averageCommission: data.length > 0 
+        ? data.reduce((sum, item) => sum + (item.commission || 0), 0) / data.length 
+        : 0,
+      statusSummary: data.reduce((acc, item) => {
+        const status = item.status || 'pending';
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+    }),
   });
 };
 
@@ -88,6 +136,7 @@ export const useCommissionStatusById = (id: number) => {
     queryKey: queryKeys.commissionStatusById(id),
     queryFn: () => apiService.getCommissionStatusById(id),
     enabled: !!id,
+    ...individualQueryDefaults, // 통합된 기본 설정 사용
   });
 };
 
@@ -164,7 +213,7 @@ export const useCurrentUser = () => {
       return user;
     },
     enabled: userApi.isAuthenticated(),
-    staleTime: 5 * 60 * 1000, // 5분
+    ...authQueryDefaults, // 통합된 기본 설정 사용
   });
 };
 
@@ -173,6 +222,7 @@ export const useUserById = (id: number) => {
     queryKey: queryKeys.userById(id),
     queryFn: () => userApi.getUserById(id),
     enabled: !!id,
+    ...authQueryDefaults, // 통합된 기본 설정 사용
   });
 };
 
@@ -188,18 +238,14 @@ export const useLogin = () => {
       // 현재 사용자 캐시 설정
       queryClient.setQueryData(queryKeys.currentUser, response.user);
     },
-    onError: (error: IApiError) => {
-      logError(error, 'useLogin');
-    },
+    onError: createErrorHandler('useLogin'), // 통합된 에러 핸들러 사용
   });
 };
 
 export const useSignUp = () => {
   return useMutation({
     mutationFn: (signUpData: SignUpRequest) => userApi.signUp(signUpData),
-    onError: (error: IApiError) => {
-      logError(error, 'useSignUp');
-    },
+    onError: createErrorHandler('useSignUp'), // 통합된 에러 핸들러 사용
   });
 };
 
