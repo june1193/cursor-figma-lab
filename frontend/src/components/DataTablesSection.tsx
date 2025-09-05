@@ -1,8 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { useDashboardData } from "../hooks/useDashboardQueries";
-import { ErrorDisplay } from "./ErrorDisplay";
-import { IApiError } from "../types/error";
 import { CardLoadingSpinner } from "./ui/LoadingSpinner";
 import { CardErrorMessage } from "./ui/ErrorMessage";
 

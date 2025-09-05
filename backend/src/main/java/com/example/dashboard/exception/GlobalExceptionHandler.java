@@ -20,25 +20,46 @@ public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // 커스텀 예외 처리
-    @ExceptionHandler(DataNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleDataNotFound(DataNotFoundException e) {
+    @ExceptionHandler(CustomExceptions.DataNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleDataNotFound(CustomExceptions.DataNotFoundException e) {
         logger.warn("Data not found: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(e.getMessage(), e.getCode(), e.getStatus()));
     }
 
-    @ExceptionHandler(DatabaseException.class)
-    public ResponseEntity<ErrorResponse> handleDatabaseError(DatabaseException e) {
+    @ExceptionHandler(CustomExceptions.DatabaseException.class)
+    public ResponseEntity<ErrorResponse> handleDatabaseError(CustomExceptions.DatabaseException e) {
         logger.error("Database error: {}", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse(e.getMessage(), e.getCode(), e.getStatus()));
     }
 
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ErrorResponse> handleValidationError(ValidationException e) {
+    @ExceptionHandler(CustomExceptions.ValidationException.class)
+    public ResponseEntity<ErrorResponse> handleValidationError(CustomExceptions.ValidationException e) {
         logger.warn("Validation error: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(e.getMessage(), e.getCode(), e.getStatus(), e.getDetails()));
+    }
+
+    @ExceptionHandler(CustomExceptions.AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationError(CustomExceptions.AuthenticationException e) {
+        logger.warn("Authentication error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(e.getMessage(), e.getCode(), e.getStatus()));
+    }
+
+    @ExceptionHandler(CustomExceptions.AuthorizationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationError(CustomExceptions.AuthorizationException e) {
+        logger.warn("Authorization error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(e.getMessage(), e.getCode(), e.getStatus()));
+    }
+
+    @ExceptionHandler(CustomExceptions.BusinessException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessError(CustomExceptions.BusinessException e) {
+        logger.warn("Business error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage(), e.getCode(), e.getStatus()));
     }
 
     // Spring 예외 처리

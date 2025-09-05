@@ -1,8 +1,7 @@
 package com.example.dashboard.service;
 
 import com.example.dashboard.entity.ProductManagement;
-import com.example.dashboard.exception.DataNotFoundException;
-import com.example.dashboard.exception.DatabaseException;
+import com.example.dashboard.exception.CustomExceptions;
 import com.example.dashboard.mapper.ProductManagementMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +29,10 @@ public class ProductManagementService {
             return result;
         } catch (DataAccessException e) {
             logger.error("Database error while fetching all product management data", e);
-            throw new DatabaseException("제품별 판매현황 데이터를 조회하는 중 오류가 발생했습니다.", e);
+            throw new CustomExceptions.DatabaseException("제품별 판매현황 데이터를 조회하는 중 오류가 발생했습니다.", e);
         } catch (Exception e) {
             logger.error("Unexpected error while fetching all product management data", e);
-            throw new DatabaseException("제품별 판매현황 데이터 조회 중 예상치 못한 오류가 발생했습니다.", e);
+            throw new CustomExceptions.DatabaseException("제품별 판매현황 데이터 조회 중 예상치 못한 오류가 발생했습니다.", e);
         }
     }
     
@@ -45,17 +44,17 @@ public class ProductManagementService {
         try {
             ProductManagement result = productManagementMapper.findByProductName(productName);
             if (result == null) {
-                throw new DataNotFoundException("제품명 '" + productName + "'에 해당하는 데이터를 찾을 수 없습니다.");
+                throw new CustomExceptions.DataNotFoundException("제품명 '" + productName + "'에 해당하는 데이터를 찾을 수 없습니다.");
             }
             return result;
         } catch (DataAccessException e) {
             logger.error("Database error while fetching product management data for: {}", productName, e);
-            throw new DatabaseException("제품별 판매현황 데이터를 조회하는 중 오류가 발생했습니다.", e);
-        } catch (DataNotFoundException e) {
+            throw new CustomExceptions.DatabaseException("제품별 판매현황 데이터를 조회하는 중 오류가 발생했습니다.", e);
+        } catch (CustomExceptions.DataNotFoundException e) {
             throw e; // 재던지기
         } catch (Exception e) {
             logger.error("Unexpected error while fetching product management data for: {}", productName, e);
-            throw new DatabaseException("제품별 판매현황 데이터 조회 중 예상치 못한 오류가 발생했습니다.", e);
+            throw new CustomExceptions.DatabaseException("제품별 판매현황 데이터 조회 중 예상치 못한 오류가 발생했습니다.", e);
         }
     }
 }
