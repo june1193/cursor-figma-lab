@@ -4,26 +4,20 @@ import com.example.dashboard.entity.User;
 import com.example.dashboard.exception.DatabaseException;
 import com.example.dashboard.exception.ValidationException;
 import com.example.dashboard.mapper.UserMapper;
+import com.example.dashboard.util.ValidationUtil;
+import com.example.dashboard.util.PasswordUtil;
+import com.example.dashboard.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.regex.Pattern;
 
 @Service
 public class UserService {
 
     @Autowired
     private UserMapper userMapper;
-
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-    // 이메일 유효성 검사 패턴
-    private static final Pattern EMAIL_PATTERN = Pattern.compile(
-        "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
-    );
 
     /**
      * 회원가입
@@ -43,7 +37,7 @@ public class UserService {
             }
 
             // 비밀번호 암호화
-            String encodedPassword = passwordEncoder.encode(password);
+            String encodedPassword = PasswordUtil.encode(password);
 
             // 사용자 객체 생성
             User user = new User();
@@ -51,8 +45,8 @@ public class UserService {
             user.setUsername(username);
             user.setEmail(email);
             user.setPassword(encodedPassword);
-            user.setCreatedAt(LocalDateTime.now());
-            user.setUpdatedAt(LocalDateTime.now());
+            user.setCreatedAt(DateUtil.now());
+            user.setUpdatedAt(DateUtil.now());
             user.setIsActive(true);
 
             // 데이터베이스에 저장
@@ -82,7 +76,7 @@ public class UserService {
             }
 
             // 비밀번호 확인
-            if (!passwordEncoder.matches(password, user.getPassword())) {
+            if (!PasswordUtil.matches(password, user.getPassword())) {
                 throw new ValidationException("사용자명 또는 비밀번호가 올바르지 않습니다.");
             }
 
@@ -133,33 +127,10 @@ public class UserService {
      * 회원가입 입력값 유효성 검사
      */
     private void validateSignUpInput(String companyName, String username, String email, String password) {
-        if (companyName == null || companyName.trim().isEmpty()) {
-            throw new ValidationException("회사명을 입력해주세요.");
-        }
-
-        if (username == null || username.trim().isEmpty()) {
-            throw new ValidationException("사용자명을 입력해주세요.");
-        }
-
-        if (username.length() < 3 || username.length() > 20) {
-            throw new ValidationException("사용자명은 3자 이상 20자 이하여야 합니다.");
-        }
-
-        if (email == null || email.trim().isEmpty()) {
-            throw new ValidationException("이메일을 입력해주세요.");
-        }
-
-        if (!EMAIL_PATTERN.matcher(email).matches()) {
-            throw new ValidationException("올바른 이메일 형식이 아닙니다.");
-        }
-
-        if (password == null || password.trim().isEmpty()) {
-            throw new ValidationException("비밀번호를 입력해주세요.");
-        }
-
-        if (password.length() < 6) {
-            throw new ValidationException("비밀번호는 6자 이상이어야 합니다.");
-        }
+        ValidationUtil.validateCompanyName(companyName);
+        ValidationUtil.validateUsername(username);
+        ValidationUtil.validateEmail(email);
+        ValidationUtil.validatePassword(password);
     }
 
     /**
@@ -173,21 +144,15 @@ public class UserService {
             }
 
             // 기존 비밀번호 확인
-            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            if (!PasswordUtil.matches(oldPassword, user.getPassword())) {
                 throw new ValidationException("기존 비밀번호가 올바르지 않습니다.");
             }
 
             // 새 비밀번호 유효성 검사
-            if (newPassword == null || newPassword.trim().isEmpty()) {
-                throw new ValidationException("새 비밀번호를 입력해주세요.");
-            }
-
-            if (newPassword.length() < 6) {
-                throw new ValidationException("새 비밀번호는 6자 이상이어야 합니다.");
-            }
+            ValidationUtil.validatePassword(newPassword);
 
             // 새 비밀번호 암호화 및 저장
-            String encodedNewPassword = passwordEncoder.encode(newPassword);
+            String encodedNewPassword = PasswordUtil.encode(newPassword);
             int result = userMapper.updatePassword(userId, encodedNewPassword);
             
             if (result <= 0) {
