@@ -34,10 +34,15 @@ apiClient.interceptors.response.use(
   (error) => {
     // 401 Unauthorized - 토큰 만료 또는 인증 실패
     if (error.response?.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      // 로그인 페이지로 리다이렉트 (필요시)
-      window.location.href = '/';
+      // 로그인 실패 시에는 리다이렉트하지 않고 에러만 반환
+      // 토큰 만료 시에만 리다이렉트 (현재는 로그인 중이므로 제외)
+      if (error.config?.url?.includes('/auth/login')) {
+        // 로그인 API 호출 시에는 리다이렉트하지 않음
+      } else {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        window.location.href = '/';
+      }
     }
     
     // 에러 응답 처리

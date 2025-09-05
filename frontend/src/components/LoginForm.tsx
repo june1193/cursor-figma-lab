@@ -101,6 +101,7 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
                       id="company"
                       type="text"
                       placeholder="회사명을 입력하세요"
+                      autoComplete="organization"
                       {...register('company')}
                       onChange={(e) => handleInputChange('company', e.target.value)}
                       className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
@@ -119,6 +120,7 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
                       id="username"
                       type="text"
                       placeholder="사용자명을 입력하세요"
+                      autoComplete="username"
                       {...register('username')}
                       onChange={(e) => handleInputChange('username', e.target.value)}
                       className={`h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${
@@ -137,6 +139,7 @@ export function LoginForm({ onLogin, onSwitchToSignUp }: LoginFormProps) {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="비밀번호를 입력하세요"
+                      autoComplete="current-password"
                       {...register('password')}
                       onChange={(e) => handleInputChange('password', e.target.value)}
                       className={`pr-12 h-24 text-base bg-slate-50 border-slate-300 focus:border-slate-500 focus:ring-slate-200 transition-all duration-200 ${

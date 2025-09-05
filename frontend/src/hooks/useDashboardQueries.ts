@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService, ProductManagement, SalesPerson, Institution, CommissionStatus } from '../services/api';
 import { userApi } from '../services/userApi';
+import { exchangeRateApi } from '../services/exchangeRateApi';
 import { IApiError } from '../types/error';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import type { LoginRequest, SignUpRequest, User } from '../types/user';
+import type { ExchangeRate } from '../types/exchangeRate';
 import { 
   dashboardQueryDefaults, 
   individualQueryDefaults, 
@@ -21,6 +23,8 @@ export const queryKeys = {
   institutionById: (id: number) => ['institution', id] as const,
   commissionStatus: ['commissionStatus'] as const,
   commissionStatusById: (id: number) => ['commissionStatus', id] as const,
+  // Exchange Rate related query keys
+  exchangeRates: ['exchangeRates'] as const,
   // User related query keys
   currentUser: ['currentUser'] as const,
   userById: (id: number) => ['user', id] as const,
@@ -265,20 +269,45 @@ export const useLogout = () => {
   });
 };
 
+// 환율 데이터 Queries
+export const useExchangeRates = () => {
+  return useQuery({
+    queryKey: queryKeys.exchangeRates,
+    queryFn: exchangeRateApi.getExchangeRates,
+    ...dashboardQueryDefaults,
+    refetchInterval: 300000, // 5분마다 갱신
+    select: (data) => ({
+      items: data,
+      totalCount: data.length,
+      currencies: [...new Set(data.map(item => item.currencyPair))],
+      latestRates: data.reduce((acc, item) => {
+        const pair = item.currencyPair;
+        if (!acc[pair] || new Date(item.date) > new Date(acc[pair].date)) {
+          acc[pair] = item;
+        }
+        return acc;
+      }, {} as Record<string, ExchangeRate>),
+    }),
+    onError: createErrorHandler('useExchangeRates'),
+  });
+};
+
 // 모든 대시보드 데이터를 한번에 가져오는 Hook
 export const useDashboardData = () => {
   const productQuery = useProductManagement();
   const salesQuery = useSalesPersons();
   const institutionQuery = useInstitutions();
   const commissionQuery = useCommissionStatus();
+  const exchangeRateQuery = useExchangeRates();
 
   return {
     productManagement: productQuery,
     salesPersons: salesQuery,
     institutions: institutionQuery,
     commissionStatus: commissionQuery,
-    isLoading: productQuery.isLoading || salesQuery.isLoading || institutionQuery.isLoading || commissionQuery.isLoading,
-    isError: productQuery.isError || salesQuery.isError || institutionQuery.isError || commissionQuery.isError,
-    error: productQuery.error || salesQuery.error || institutionQuery.error || commissionQuery.error,
+    exchangeRates: exchangeRateQuery,
+    isLoading: productQuery.isLoading || salesQuery.isLoading || institutionQuery.isLoading || commissionQuery.isLoading || exchangeRateQuery.isLoading,
+    isError: productQuery.isError || salesQuery.isError || institutionQuery.isError || commissionQuery.isError || exchangeRateQuery.isError,
+    error: productQuery.error || salesQuery.error || institutionQuery.error || commissionQuery.error || exchangeRateQuery.error,
   };
 };

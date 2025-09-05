@@ -16,8 +16,8 @@ export function DashboardHeader({ onLogout, user }: DashboardHeaderProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">대시보드</h1>
-              <p className="text-slate-600 mt-1">실시간 관리 현황 및 수익 분석</p>
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">금융 시장 모니터링</h1>
+              <p className="text-slate-600 mt-1">실시간 환율 및 경제 지표</p>
             </div>
             <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-lg border border-slate-200">
               <span className="text-sm font-medium text-slate-700">기준일자</span>
