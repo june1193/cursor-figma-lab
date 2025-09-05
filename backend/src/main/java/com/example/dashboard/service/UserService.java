@@ -6,12 +6,14 @@ import com.example.dashboard.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Pattern;
 
 @Service
+@Transactional
 public class UserService {
 
     @Autowired
@@ -27,6 +29,7 @@ public class UserService {
     /**
      * 회원가입
      */
+    @Transactional
     public User signUp(String companyName, String username, String email, String password) {
         try {
             // 입력값 유효성 검사
@@ -164,6 +167,7 @@ public class UserService {
     /**
      * 비밀번호 변경
      */
+    @Transactional
     public void changePassword(Long userId, String oldPassword, String newPassword) {
         try {
             User user = userMapper.findById(userId);
