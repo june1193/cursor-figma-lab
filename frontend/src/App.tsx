@@ -14,15 +14,25 @@ type AuthMode = 'login' | 'signup';
 export default function App() {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   
-  // 날짜 선택 상태
-  const [startDate, setStartDate] = useState<Date | undefined>(new Date(new Date().setMonth(new Date().getMonth() - 12)));
-  const [endDate, setEndDate] = useState<Date | undefined>(new Date());
+  // 날짜 선택 상태 (임시 저장용)
+  const [tempStartDate, setTempStartDate] = useState<Date | undefined>(new Date(new Date().setMonth(new Date().getMonth() - 12)));
+  const [tempEndDate, setTempEndDate] = useState<Date | undefined>(new Date());
+  
+  // 실제 적용된 날짜 (API 호출에 사용)
+  const [appliedStartDate, setAppliedStartDate] = useState<Date | undefined>(new Date(new Date().setMonth(new Date().getMonth() - 12)));
+  const [appliedEndDate, setAppliedEndDate] = useState<Date | undefined>(new Date());
   
   // React Query hooks
   const { data: currentUser, isLoading: userLoading } = useCurrentUser();
   const logoutMutation = useLogout();
   
   const isLoggedIn = !!currentUser;
+
+  // 조회 버튼 클릭 시 실제 날짜 적용
+  const handleApplyDateRange = () => {
+    setAppliedStartDate(tempStartDate);
+    setAppliedEndDate(tempEndDate);
+  };
 
   const handleLogin = (user: any) => {
     // React Query가 자동으로 currentUser 상태를 업데이트함
@@ -67,10 +77,11 @@ export default function App() {
       <DashboardHeader 
         onLogout={handleLogout} 
         user={currentUser}
-        startDate={startDate}
-        endDate={endDate}
-        onStartDateChange={setStartDate}
-        onEndDateChange={setEndDate}
+        startDate={tempStartDate}
+        endDate={tempEndDate}
+        onStartDateChange={setTempStartDate}
+        onEndDateChange={setTempEndDate}
+        onApplyDateRange={handleApplyDateRange}
       />
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-12 gap-8">
@@ -79,8 +90,8 @@ export default function App() {
           </div>
           <div className="col-span-12 lg:col-span-8">
             <DataTablesSection 
-              startDate={startDate}
-              endDate={endDate}
+              startDate={appliedStartDate}
+              endDate={appliedEndDate}
             />
           </div>
         </div>

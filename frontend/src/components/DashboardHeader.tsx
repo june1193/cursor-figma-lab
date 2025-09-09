@@ -15,9 +15,10 @@ interface DashboardHeaderProps {
   endDate?: Date;
   onStartDateChange?: (date: Date | undefined) => void;
   onEndDateChange?: (date: Date | undefined) => void;
+  onApplyDateRange?: () => void;
 }
 
-export function DashboardHeader({ onLogout, user, startDate, endDate, onStartDateChange, onEndDateChange }: DashboardHeaderProps) {
+export function DashboardHeader({ onLogout, user, startDate, endDate, onStartDateChange, onEndDateChange, onApplyDateRange }: DashboardHeaderProps) {
   return (
     <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 shadow-sm">
       <div className="w-full px-6 py-6">
@@ -75,10 +76,13 @@ export function DashboardHeader({ onLogout, user, startDate, endDate, onStartDat
             </div>
           </div>
           <div className="flex items-center gap-4">
+              <Button 
+                onClick={onApplyDateRange}
+                className="bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+              >
+                조회
+              </Button>
             <RefreshButton />
-            <Button className="bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 font-medium">
-              조회
-            </Button>
             
             {onLogout && (
               <div className="flex items-center gap-3">
