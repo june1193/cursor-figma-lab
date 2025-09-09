@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/exchange-rates")
@@ -18,5 +19,19 @@ public class ExchangeRateController {
     @GetMapping
     public List<ExchangeRate> getExchangeRates() {
         return bankOfKoreaService.getExchangeRates();
+    }
+    
+    @GetMapping("/interest-rates")
+    public List<Map<String, Object>> getInterestRates(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return bankOfKoreaService.getInterestRates(startDate, endDate);
+    }
+    
+    @GetMapping("/cpi")
+    public List<Map<String, Object>> getConsumerPriceIndex(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        return bankOfKoreaService.getConsumerPriceIndex(startDate, endDate);
     }
 }

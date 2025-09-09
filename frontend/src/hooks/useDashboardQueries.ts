@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService, ProductManagement, SalesPerson, Institution, CommissionStatus } from '../services/api';
 import { userApi } from '../services/userApi';
-import { exchangeRateApi } from '../services/exchangeRateApi';
+import { exchangeRateApi, type InterestRate, type ConsumerPriceIndex } from '../services/exchangeRateApi';
 import { IApiError } from '../types/error';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import type { LoginRequest, SignUpRequest, User } from '../types/user';
@@ -25,6 +25,8 @@ export const queryKeys = {
   commissionStatusById: (id: number) => ['commissionStatus', id] as const,
   // Exchange Rate related query keys
   exchangeRates: ['exchangeRates'] as const,
+  interestRates: ['interestRates'] as const,
+  consumerPriceIndex: ['consumerPriceIndex'] as const,
   // User related query keys
   currentUser: ['currentUser'] as const,
   userById: (id: number) => ['user', id] as const,
@@ -292,6 +294,44 @@ export const useExchangeRates = () => {
   });
 };
 
+// 기준금리 데이터 Queries
+export const useInterestRates = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: [...queryKeys.interestRates, startDate, endDate],
+    queryFn: () => exchangeRateApi.getInterestRates(startDate, endDate),
+    ...dashboardQueryDefaults,
+    refetchInterval: 3600000, // 1시간마다 갱신 (월 1회 발표)
+    select: (data) => ({
+      items: data,
+      totalCount: data.length,
+      latestRate: data.length > 0 ? data[data.length - 1] : null,
+      averageRate: data.length > 0 
+        ? data.reduce((sum, item) => sum + item.rate, 0) / data.length 
+        : 0,
+    }),
+    onError: createErrorHandler('useInterestRates'),
+  });
+};
+
+// 소비자물가상승률 데이터 Queries
+export const useConsumerPriceIndex = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: [...queryKeys.consumerPriceIndex, startDate, endDate],
+    queryFn: () => exchangeRateApi.getConsumerPriceIndex(startDate, endDate),
+    ...dashboardQueryDefaults,
+    refetchInterval: 3600000, // 1시간마다 갱신 (월 1회 발표)
+    select: (data) => ({
+      items: data,
+      totalCount: data.length,
+      latestCpi: data.length > 0 ? data[data.length - 1] : null,
+      averageCpi: data.length > 0 
+        ? data.reduce((sum, item) => sum + item.cpi, 0) / data.length 
+        : 0,
+    }),
+    onError: createErrorHandler('useConsumerPriceIndex'),
+  });
+};
+
 // 모든 대시보드 데이터를 한번에 가져오는 Hook
 export const useDashboardData = () => {
   const productQuery = useProductManagement();
@@ -299,6 +339,8 @@ export const useDashboardData = () => {
   const institutionQuery = useInstitutions();
   const commissionQuery = useCommissionStatus();
   const exchangeRateQuery = useExchangeRates();
+  const interestRateQuery = useInterestRates();
+  const cpiQuery = useConsumerPriceIndex();
 
   return {
     productManagement: productQuery,
@@ -306,8 +348,10 @@ export const useDashboardData = () => {
     institutions: institutionQuery,
     commissionStatus: commissionQuery,
     exchangeRates: exchangeRateQuery,
-    isLoading: productQuery.isLoading || salesQuery.isLoading || institutionQuery.isLoading || commissionQuery.isLoading || exchangeRateQuery.isLoading,
-    isError: productQuery.isError || salesQuery.isError || institutionQuery.isError || commissionQuery.isError || exchangeRateQuery.isError,
-    error: productQuery.error || salesQuery.error || institutionQuery.error || commissionQuery.error || exchangeRateQuery.error,
+    interestRates: interestRateQuery,
+    consumerPriceIndex: cpiQuery,
+    isLoading: productQuery.isLoading || salesQuery.isLoading || institutionQuery.isLoading || commissionQuery.isLoading || exchangeRateQuery.isLoading || interestRateQuery.isLoading || cpiQuery.isLoading,
+    isError: productQuery.isError || salesQuery.isError || institutionQuery.isError || commissionQuery.isError || exchangeRateQuery.isError || interestRateQuery.isError || cpiQuery.isError,
+    error: productQuery.error || salesQuery.error || institutionQuery.error || commissionQuery.error || exchangeRateQuery.error || interestRateQuery.error || cpiQuery.error,
   };
 };

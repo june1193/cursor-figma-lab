@@ -14,6 +14,10 @@ type AuthMode = 'login' | 'signup';
 export default function App() {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   
+  // 날짜 선택 상태
+  const [startDate, setStartDate] = useState<Date | undefined>(new Date(new Date().setMonth(new Date().getMonth() - 12)));
+  const [endDate, setEndDate] = useState<Date | undefined>(new Date());
+  
   // React Query hooks
   const { data: currentUser, isLoading: userLoading } = useCurrentUser();
   const logoutMutation = useLogout();
@@ -60,14 +64,24 @@ export default function App() {
   // 로그인한 경우 대시보드 표시
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <DashboardHeader onLogout={handleLogout} user={currentUser} />
+      <DashboardHeader 
+        onLogout={handleLogout} 
+        user={currentUser}
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+      />
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-12 gap-8">
           <div className="col-span-12 lg:col-span-4">
             <ChartsSection />
           </div>
           <div className="col-span-12 lg:col-span-8">
-            <DataTablesSection />
+            <DataTablesSection 
+              startDate={startDate}
+              endDate={endDate}
+            />
           </div>
         </div>
       </div>
