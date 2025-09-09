@@ -73,5 +73,9 @@ next-env.d.ts
 *.class
 target/
 
+# Application configuration files
+application.yml
+application-*.yml
+
 # IntelliJ IDEA decompiled files
 *$*.java
