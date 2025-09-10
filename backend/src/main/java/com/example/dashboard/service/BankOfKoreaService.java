@@ -1,6 +1,7 @@
 package com.example.dashboard.service;
 
 import com.example.dashboard.entity.ExchangeRate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,7 +16,9 @@ public class BankOfKoreaService {
     @Value("${bank-of-korea.api-key}")
     private String apiKey;
     
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private RestTemplate restTemplate;
+    
     private final String BASE_URL = "https://ecos.bok.or.kr/api/StatisticSearch";
     
     // 통화 코드 매핑

@@ -67,6 +67,8 @@ public class UserService {
             user.setPassword(null);
             return user;
 
+        } catch (CustomExceptions.ValidationException e) {
+            throw e; // ValidationException은 그대로 던지기
         } catch (Exception e) {
             throw new CustomExceptions.DatabaseException("회원가입 중 오류가 발생했습니다: " + e.getMessage());
         }
