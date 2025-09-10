@@ -248,7 +248,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
       {/* 푸터 */}
       <div className="text-center py-6">
         <p className="text-sm text-slate-500">
-          © 2024 금융 대시보드. 모든 권리 보유.
+          © 2025 금융 대시보드. 모든 권리 보유.
         </p>
       </div>
     </div>
