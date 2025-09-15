@@ -187,3 +187,53 @@
 html {
   font-size: var(--font-size);
 }
+
+/* 모바일 헤더 레이아웃 수정 */
+@media (max-width: 768px) {
+  .mobile-header-layout {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1rem !important;
+  }
+  
+  .mobile-header-layout > div:first-child {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+  
+  .mobile-header-layout > div:first-child > div:last-child {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .mobile-header-layout > div:first-child > div:last-child > div:last-child {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .mobile-header-layout > div:last-child {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+  
+  .mobile-header-layout > div:last-child > div:last-child {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+  }
+  
+  .mobile-header-layout h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  .mobile-header-layout p {
+    font-size: 0.875rem !important;
+  }
+  
+  .mobile-header-layout .w-32 {
+    width: 100% !important;
+  }
+  
+  .mobile-header-layout button {
+    width: 100% !important;
+  }
+}

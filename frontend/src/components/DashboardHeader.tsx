@@ -22,7 +22,7 @@ export function DashboardHeader({ onLogout, user, startDate, endDate, onStartDat
   return (
     <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 shadow-sm">
       <div className="w-full px-6 py-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mobile-header-layout">
           <div className="flex items-center gap-8">
             <div>
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">금융 시장 모니터링</h1>
