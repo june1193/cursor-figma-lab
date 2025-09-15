@@ -65,7 +65,7 @@ jobs:
             # 헬스체크 (최대 20초 대기)
             for i in {1..20}; do
               sleep 1
-              if curl -sSf http://127.0.0.1:8080/actuator/health >/dev/null 2>&1; then
+              if curl -sSf http://127.0.0.1:8080/api/health >/dev/null 2>&1; then
                 echo "✅ Backend health check passed"
                 exit 0
               fi
