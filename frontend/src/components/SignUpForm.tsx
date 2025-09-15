@@ -81,7 +81,7 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-slate-700 to-slate-800 rounded-2xl mb-4 shadow-lg">
               <Building2 className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">테스트2</h1>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">테스트3</h1>
             <p className="text-slate-600 mt-2">새 계정을 만들어 시작하세요</p>
           </div>
 
