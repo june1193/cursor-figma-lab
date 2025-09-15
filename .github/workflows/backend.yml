@@ -31,10 +31,6 @@ jobs:
       - name: Build with Maven
         run: mvn -B -ntp -f backend/pom.xml package
 
-      - name: Add EC2 to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -46,6 +42,7 @@ jobs:
           target: "/home/ec2-user/app/"
           strip_components: 2
           overwrite: true
+          args: "-o StrictHostKeyChecking=no"
 
       - name: Deploy Backend
         uses: appleboy/ssh-action@v1.0.3
@@ -53,6 +50,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          args: "-o StrictHostKeyChecking=no"
           script: |
             set -e
             cd /home/ec2-user/app

@@ -27,11 +27,6 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Add EC2 to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
       - name: Deploy to EC2
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -42,7 +37,7 @@ jobs:
           chmod 600 private_key.pem
 
           # 빌드 파일 업로드
-          scp -i private_key.pem -r frontend/build/* $SSH_USER@$SSH_HOST:/home/ec2-user/frontend/build/
+          scp -i private_key.pem -o StrictHostKeyChecking=no -r frontend/build/* $SSH_USER@$SSH_HOST:/home/ec2-user/frontend/build/
 
           # EC2에서 배포 스크립트 실행
-          ssh -i private_key.pem $SSH_USER@$SSH_HOST "bash ~/deploy/frontend/deploy.sh"
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "bash ~/deploy/frontend/deploy.sh"
