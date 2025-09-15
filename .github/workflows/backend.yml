@@ -42,6 +42,7 @@ jobs:
           target: "/home/ec2-user/app/"
           strip_components: 2
           overwrite: true
+          timeout: 60s
 
       - name: Deploy Backend
         uses: appleboy/ssh-action@v1.0.3
@@ -49,6 +50,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          timeout: 60s
           script: |
             set -e
             cd /home/ec2-user/app
