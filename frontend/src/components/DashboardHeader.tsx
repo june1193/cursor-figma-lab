@@ -24,7 +24,7 @@ export function DashboardHeader({ onLogout, user, startDate, endDate, onStartDat
       <div className="w-full px-6 py-6">
         <div className="flex flex-wrap items-center justify-between">
           <div className="flex items-center gap-8">
-            <div>
+            <div className="hidden sm:block">
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight whitespace-normal break-keep">
                 금융 시장 모니터링
               </h1>
