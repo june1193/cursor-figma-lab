@@ -1,59 +1,8 @@
-// API 타입 정의
-export interface ProductManagement {
-  id: number;
-  productName: string;
-  consultationCount: number;
-  salesCount: number;
-  commission: number;
-  mtdConsultationCount: number;
-  mtdSalesCount: number;
-  mtdCommission: number;
-  ytdConsultationCount: number;
-  ytdSalesCount: number;
-  ytdCommission: number;
-}
-
-export interface SalesPerson {
-  id: number;
-  salesPersonName: string;
-  consultationCount: number;
-  salesCount: number;
-  commission: number;
-  mtdConsultationCount: number;
-  mtdSalesCount: number;
-  mtdCommission: number;
-  ytdConsultationCount: number;
-  ytdSalesCount: number;
-  ytdCommission: number;
-}
-
-export interface Institution {
-  id: number;
-  institutionName: string;
-  consultationCount: number;
-  salesCount: number;
-  commission: number;
-  mtdConsultationCount: number;
-  mtdSalesCount: number;
-  mtdCommission: number;
-  ytdConsultationCount: number;
-  ytdSalesCount: number;
-  ytdCommission: number;
-}
-
-export interface CommissionStatus {
-  id: number;
-  productType: string;
-  commission: number;
-  mtdCommission: number;
-  ytdCommission: number;
-}
-
 import { ApiError, ERROR_CODES, IApiError } from '../types/error';
 import { handleApiError, logError } from '../utils/errorHandler';
 
-// API 기본 설정
-const API_BASE_URL = 'http://localhost:8080/api';
+// API 기본 설정 - 환경에 따라 다른 URL 사용
+const API_BASE_URL = import.meta.env.PROD ? '/api' : 'http://localhost:8080/api';
 
 // HTTP 요청 래퍼 함수
 async function apiRequest<T>(url: string, options?: RequestInit): Promise<T> {
@@ -98,70 +47,8 @@ async function apiRequest<T>(url: string, options?: RequestInit): Promise<T> {
   }
 }
 
-// API 서비스 함수들
+// API 서비스 함수들 - 환율 API만 유지
 export const apiService = {
-  // 제품별 판매현황
-  async getProductManagement(): Promise<ProductManagement[]> {
-    return apiRequest<ProductManagement[]>(`${API_BASE_URL}/product-management`);
-  },
-
-  async getProductManagementById(id: number): Promise<ProductManagement> {
-    return apiRequest<ProductManagement>(`${API_BASE_URL}/product-management/${id}`);
-  },
-
-  // 판매자별 판매현황
-  async getSalesPersons(): Promise<SalesPerson[]> {
-    return apiRequest<SalesPerson[]>(`${API_BASE_URL}/sales-persons`);
-  },
-
-  async getSalesPersonById(id: number): Promise<SalesPerson> {
-    return apiRequest<SalesPerson>(`${API_BASE_URL}/sales-persons/${id}`);
-  },
-
-  // 이용기관별 판매현황
-  async getInstitutions(): Promise<Institution[]> {
-    return apiRequest<Institution[]>(`${API_BASE_URL}/institutions`);
-  },
-
-  async getInstitutionById(id: number): Promise<Institution> {
-    return apiRequest<Institution>(`${API_BASE_URL}/institutions/${id}`);
-  },
-
-  // 수수료 현황
-  async getCommissionStatus(): Promise<CommissionStatus[]> {
-    return apiRequest<CommissionStatus[]>(`${API_BASE_URL}/commission-status`);
-  },
-
-  async getCommissionStatusById(id: number): Promise<CommissionStatus> {
-    return apiRequest<CommissionStatus>(`${API_BASE_URL}/commission-status/${id}`);
-  },
-
-  // 데이터 업데이트 (향후 구현 예정)
-  async updateProductManagement(id: number, data: Partial<ProductManagement>): Promise<ProductManagement> {
-    return apiRequest<ProductManagement>(`${API_BASE_URL}/product-management/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async updateSalesPerson(id: number, data: Partial<SalesPerson>): Promise<SalesPerson> {
-    return apiRequest<SalesPerson>(`${API_BASE_URL}/sales-persons/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async updateInstitution(id: number, data: Partial<Institution>): Promise<Institution> {
-    return apiRequest<Institution>(`${API_BASE_URL}/institutions/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async updateCommissionStatus(id: number, data: Partial<CommissionStatus>): Promise<CommissionStatus> {
-    return apiRequest<CommissionStatus>(`${API_BASE_URL}/commission-status/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
+  // 환율 정보는 exchangeRateApi.ts에서 별도 관리
+  // 여기서는 공통 API 유틸리티만 제공
 };

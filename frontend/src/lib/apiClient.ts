@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
-// API 기본 설정
-const API_BASE_URL = 'http://localhost:8080/api';
+// API 기본 설정 - 환경에 따라 다른 URL 사용
+const API_BASE_URL = import.meta.env.PROD ? '/api' : 'http://localhost:8080/api';
 
 // Axios 인스턴스 생성
 const apiClient: AxiosInstance = axios.create({

@@ -12,12 +12,8 @@ export function RefreshButton() {
     setIsRefreshing(true);
     
     try {
-      // 모든 대시보드 데이터 캐시 무효화하여 새로고침
+      // 환율 관련 데이터만 캐시 무효화하여 새로고침
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.productManagement }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.salesPersons }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.institutions }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.commissionStatus }),
         queryClient.invalidateQueries({ queryKey: queryKeys.exchangeRates }),
         queryClient.invalidateQueries({ queryKey: queryKeys.interestRates }),
         queryClient.invalidateQueries({ queryKey: queryKeys.consumerPriceIndex }),
