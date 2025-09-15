@@ -39,5 +39,5 @@ jobs:
           # 빌드 파일 업로드
           scp -i private_key.pem -o StrictHostKeyChecking=no -r frontend/build/* $SSH_USER@$SSH_HOST:/home/ec2-user/frontend/build/
 
-          # EC2에서 배포 스크립트 실행
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "bash ~/deploy/frontend/deploy.sh"
+          # EC2에서 배포 스크립트 실행 (sudo 권한으로)
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "sudo bash ~/deploy/frontend/deploy.sh"
