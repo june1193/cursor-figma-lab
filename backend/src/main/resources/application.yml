@@ -32,7 +32,7 @@ logging:
 # JWT 설정
 jwt:
   secret: mySecretKey123456789012345678901234567890123456789012345678901234567890
-  expiration: 3600000  # 1시간 (밀리초) - 보안 강화를 위해 단축
+  expiration: 10000  # 10초 (밀리초) - 테스트용
 
 bank-of-korea:
   api-key: G3LFGSOI6YMDYPGJXG42
