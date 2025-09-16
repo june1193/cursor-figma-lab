@@ -20,7 +20,7 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ onLogout, user, startDate, endDate, onStartDateChange, onEndDateChange, onApplyDateRange }: DashboardHeaderProps) {
-  const { remainingTime, isExpired, percentage } = useTokenExpiry();
+  const { remainingTime, isExpired, percentage, timeDisplay } = useTokenExpiry();
 
   return (
     <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 shadow-sm">
@@ -83,15 +83,15 @@ export function DashboardHeader({ onLogout, user, startDate, endDate, onStartDat
             </div>
           </div>
           <div className="flex items-center gap-4">
-            {/* 토큰 만료시간 표시 */}
+            {/* 토큰 만료시간 표시 - 로고와 함께 사라짐 */}
             {onLogout && !isExpired && (
-              <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2">
+              <div className="hidden sm:flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2">
                 <Clock className="w-4 h-4 text-orange-600" />
                 <div className="flex flex-col">
                   <span className="text-xs text-orange-600 font-medium">로그아웃까지 남은 시간</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-orange-700">
-                      {remainingTime}초
+                      {timeDisplay}
                     </span>
                     <div className="w-16 h-1 bg-orange-200 rounded-full overflow-hidden">
                       <div 
