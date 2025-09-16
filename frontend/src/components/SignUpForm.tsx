@@ -2,6 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Eye, EyeOff, User, Lock, Building2, Mail, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 import { useSignUp } from "../hooks/useDashboardQueries";
 import { signUpSchema, type SignUpFormData } from "../schemas/validationSchemas";
@@ -63,10 +64,18 @@ export function SignUpForm({ onSignUp, onSwitchToLogin }: SignUpFormProps) {
 
     signUpMutation.mutate(signUpData, {
       onSuccess: () => {
+        toast.success('회원가입에 성공했습니다', {
+          description: '이제 로그인하여 대시보드를 이용하실 수 있습니다.',
+          duration: 3000,
+        });
         onSignUp();
       },
       onError: (error: any) => {
         console.error('SignUp error:', error);
+        toast.error('회원가입에 실패했습니다', {
+          description: error?.message || '다시 시도해 주세요.',
+          duration: 4000,
+        });
       }
     });
   };

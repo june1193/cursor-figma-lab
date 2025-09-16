@@ -8,6 +8,7 @@ import { useCurrentUser, useLogout } from "./hooks/useDashboardQueries";
 import { userApi } from "./services/userApi";
 import type { User } from "./types/user";
 import { PageLoadingSpinner } from "./components/ui/LoadingSpinner";
+import { Toaster } from "./components/ui/sonner";
 
 type AuthMode = 'login' | 'signup';
 
@@ -65,9 +66,19 @@ export default function App() {
   // 로그인하지 않은 경우 로그인/회원가입 폼 표시
   if (!isLoggedIn) {
     if (authMode === 'signup') {
-      return <SignUpForm onSignUp={handleSignUp} onSwitchToLogin={switchToLogin} />;
+      return (
+        <>
+          <SignUpForm onSignUp={handleSignUp} onSwitchToLogin={switchToLogin} />
+          <Toaster />
+        </>
+      );
     } else {
-      return <LoginForm onLogin={handleLogin} onSwitchToSignUp={switchToSignUp} />;
+      return (
+        <>
+          <LoginForm onLogin={handleLogin} onSwitchToSignUp={switchToSignUp} />
+          <Toaster />
+        </>
+      );
     }
   }
 
@@ -96,6 +107,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 }

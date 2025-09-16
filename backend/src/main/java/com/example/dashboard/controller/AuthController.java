@@ -4,6 +4,7 @@ import com.example.dashboard.entity.User;
 import com.example.dashboard.service.UserService;
 import com.example.dashboard.dto.ErrorResponse;
 import com.example.dashboard.security.JwtUtil;
+import com.example.dashboard.util.XssUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +30,25 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> signUp(@RequestBody Map<String, String> request) {
         try {
-            String companyName = request.get("companyName");
-            String username = request.get("username");
-            String email = request.get("email");
-            String password = request.get("password");
+            // XSS 검증 및 입력값 정리
+            String companyName = XssUtils.sanitizeInput(request.get("companyName"));
+            String username = XssUtils.sanitizeUsername(request.get("username"));
+            String email = XssUtils.sanitizeEmail(request.get("email"));
+            String password = request.get("password"); // 비밀번호는 별도 검증
+
+            // 필수 필드 검증
+            if (companyName == null || companyName.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("회사명을 입력해주세요.", "VALIDATION_ERROR", 400));
+            }
+            if (username == null || username.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("사용자명을 입력해주세요.", "VALIDATION_ERROR", 400));
+            }
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("이메일을 입력해주세요.", "VALIDATION_ERROR", 400));
+            }
+            if (password == null || password.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("비밀번호를 입력해주세요.", "VALIDATION_ERROR", 400));
+            }
 
             User user = userService.signUp(companyName, username, email, password);
 
@@ -59,8 +75,17 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         try {
-            String username = request.get("username");
-            String password = request.get("password");
+            // XSS 검증 및 입력값 정리
+            String username = XssUtils.sanitizeUsername(request.get("username"));
+            String password = request.get("password"); // 비밀번호는 별도 검증
+
+            // 필수 필드 검증
+            if (username == null || username.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("사용자명을 입력해주세요.", "VALIDATION_ERROR", 400));
+            }
+            if (password == null || password.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("비밀번호를 입력해주세요.", "VALIDATION_ERROR", 400));
+            }
 
             User user = userService.login(username, password);
 
