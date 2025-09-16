@@ -1,11 +1,11 @@
+import React from "react";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { RefreshButton } from "./RefreshButton";
-import { LogOut, User, CalendarIcon, Clock } from "lucide-react";
+import { LogOut, User as UserIcon, CalendarIcon, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { useState } from "react";
 import type { User } from "../types/user";
 import { useTokenExpiry } from "../hooks/useTokenExpiry";
 
@@ -20,7 +20,7 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ onLogout, user, startDate, endDate, onStartDateChange, onEndDateChange, onApplyDateRange }: DashboardHeaderProps) {
-  const { remainingTime, isExpired, percentage, timeDisplay } = useTokenExpiry();
+  const { isExpired, percentage, timeDisplay } = useTokenExpiry();
 
   return (
     <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/60 shadow-sm">
@@ -115,7 +115,7 @@ export function DashboardHeader({ onLogout, user, startDate, endDate, onStartDat
             {onLogout && (
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2 text-slate-600">
-                    <User className="w-4 h-4"/>
+                    <UserIcon className="w-4 h-4"/>
                     <span className="text-sm font-medium">{user?.username || '관리자'}</span>
                   </div>
                   <Button
